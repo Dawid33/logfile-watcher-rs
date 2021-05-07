@@ -1,4 +1,7 @@
 
-fn get_hello() -> String {
-    String::from("hello")
+mod config;
+
+
+pub fn read_config() -> Result<Config,{
+
 }
