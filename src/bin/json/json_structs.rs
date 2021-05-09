@@ -26,8 +26,8 @@ impl Default for ShortcutKeyMap {
 }
 
 impl Default for ClientConfig {
-    fn default() -> ClientConfig {
-        ClientConfig {
+    fn default() -> Self {
+        Self {
             url: Url::parse("ws://localhost:9001/socket").unwrap(),
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
