@@ -1,18 +1,36 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::net::*;
-use serde::{Deserialize, Serialize};
+use url::Url;
 
 #[derive(Serialize, Deserialize)]
-pub struct Config {
+pub struct ClientConfig {
     pub name: String,
-    pub ip: SocketAddr,
+    pub url: Url,
     pub use_tui: bool,
 }
 
-impl Default for Config {
-    fn default() -> Config {
-        Config {
+impl Default for ClientConfig {
+    fn default() -> ClientConfig {
+        ClientConfig {
             name: String::from("hello"),
-            ip: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 9001),
+            url: Url::parse("ws://localhost:9001/socket").unwrap(),
+            use_tui: true,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ServerConfig {
+    pub name: String,
+    pub url: Url,
+    pub use_tui: bool,
+}
+
+impl Default for ServerConfig {
+    fn default() -> ServerConfig {
+        ServerConfig {
+            name: String::from("hello"),
+            url: Url::parse("ws://localhost:9001/socket").unwrap(),
             use_tui: true,
         }
     }

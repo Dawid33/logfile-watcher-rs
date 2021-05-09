@@ -1,8 +1,8 @@
+use serde::{Deserialize, Serialize};
+use serde_json;
 use std::fs;
 use std::io;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
-use serde_json;
 
 pub mod json_structs;
 
@@ -21,7 +21,7 @@ where
         Err(e) => {
             println!("WARNING : Cannot load json file at [{}].", path.display());
             println!("WARNING : {}", e);
-            println!("WARNING : Creating new json with default values...");
+            println!("WARNING : Creating new json file with default values...");
             let default = T::default();
 
             if let Err(e) = try_write_json_file(&default, path) {

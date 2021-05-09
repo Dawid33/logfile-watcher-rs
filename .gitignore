@@ -1,3 +1,5 @@
 /target
 Cargo.lock
-config.json
+server_config.json
+client_config.json
+/tui-rs

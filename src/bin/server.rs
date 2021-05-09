@@ -4,23 +4,53 @@
 use std::net::TcpListener;
 use std::thread;
 use tungstenite::server::accept;
+use url::Url;
 
 mod json;
 
+use json::*;
+use json_structs::*;
+
+use tungstenite::{
+    accept_hdr,
+    handshake::server::{Request, Response},
+};
+
 fn main() {
-    /*
-    let config = load_struct::<Config>(std::path::Path::new("config.json"));
-    let server = TcpListener::bind(config.ip).unwrap();
+    let config = load_struct::<ServerConfig>(std::path::Path::new("server_config.json"));
+    let server = TcpListener::bind(&*config.url.socket_addrs(|| None).unwrap()).unwrap();
     for stream in server.incoming() {
-        thread::spawn (move || {
-            let mut websocket = accept(stream.unwrap()).unwrap();
-            handle_connection(&mut websocket).unwrap();
+        std::thread::spawn(move || {
+            let callback = |req: &Request, mut response: Response| {
+                println!("Received a new ws handshake");
+                println!("The request's path is: {}", req.uri().path());
+                println!("The request's headers are:");
+                for (ref header, _value) in req.headers() {
+                    println!("* {}", header);
+                }
+
+                // Let's add an additional header to our response to the client.
+                let headers = response.headers_mut();
+                headers.append("MyCustomHeader", ":)".parse().unwrap());
+                headers.append("SOME_TUNGSTENITE_HEADER", "header_value".parse().unwrap());
+
+                Ok(response)
+            };
+            let mut websocket = accept_hdr(stream.unwrap(), callback).unwrap();
+
+            loop {
+                let msg = websocket.read_message().unwrap();
+                if msg.is_binary() || msg.is_text() {
+                    websocket.write_message(msg).unwrap();
+                }
+            }
         });
     }
-    */
 }
 
-fn handle_connection(websocket : &mut tungstenite::WebSocket<std::net::TcpStream>) -> Result<(), Box<dyn std::error::Error>> {
+fn handle_connection(
+    websocket: &mut tungstenite::WebSocket<std::net::TcpStream>,
+) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let msg = websocket.read_message().unwrap();
 
@@ -30,5 +60,4 @@ fn handle_connection(websocket : &mut tungstenite::WebSocket<std::net::TcpStream
             websocket.write_message(msg).unwrap();
         }
     }
-    unreachable!()
 }
