@@ -4,17 +4,34 @@ use url::Url;
 
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
-    pub name: String,
     pub url: Url,
     pub use_tui: bool,
+    pub key_map : ShortcutKeyMap
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ShortcutKeyMap {
+    pub quit : char,
+    pub left : char,
+    pub right : char,
+}
+
+impl Default for ShortcutKeyMap {
+    fn default() -> Self {
+        Self {
+            quit : 'q',
+            left : 'h',
+            right : 'l',
+        }
+    }
 }
 
 impl Default for ClientConfig {
     fn default() -> ClientConfig {
         ClientConfig {
-            name: String::from("hello"),
             url: Url::parse("ws://localhost:9001/socket").unwrap(),
             use_tui: true,
+            key_map : ShortcutKeyMap::default(),
         }
     }
 }
