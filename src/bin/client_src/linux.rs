@@ -1,61 +1,19 @@
-use std::io::Write;
-use termion::input::TermRead;
-use std::{error::Error, io};
-use crate::json_structs::ClientConfig;
-use common;
 use super::*;
-use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
+
+use std::{
+    io::Write,
+};
+
 use tui::{
-    backend::TermionBackend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::Span,
     widgets::{Block, BorderType, Borders},
-    Terminal,
 };
 
-pub fn run_client(client_config : &crate::json_structs::ClientConfig) -> Result<(), Box<dyn std::error::Error>>{
-    let stdout = io::stdout().into_raw_mode()?;
-    let termion_backend = TermionBackend::new(stdout);
-    let mut terminal = Terminal::new(termion_backend)?;
-    terminal.clear()?;
-    let mut draw_config = common::DrawConfig::default();
-    let mut events = event::Events::new();
-    events.enable_exit_key();
-    loop {
-        match update_client(&mut terminal, &mut events, &mut draw_config, client_config){
-            Ok(should_contiue) => {
-                if should_contiue {
-                    draw_client(&mut terminal, &draw_config)?;
-                } else {
-                    return Ok(())
-                }
-            },
-            Err(e) => return Err(e)
-        }
-    }
-}
-
-fn update_client<W>(
-    _terminal: &mut tui::Terminal<tui::backend::TermionBackend<W>>,
-    events : &mut event::Events,
-    _draw_config : &mut common::DrawConfig,
-    client_config : &ClientConfig,
-) -> Result<bool, Box<dyn std::error::Error>>
-where
-    W: Write,
-{
-    if let event::Event::Input(key) = events.next()? {
-        if key == Key::Char(client_config.key_map.quit) {
-            return Ok(false);
-        }
-    }
-    Ok(true)
-}
-
-fn draw_client<W>(
+pub fn draw_client<W>(
     terminal: &mut tui::Terminal<tui::backend::TermionBackend<W>>, 
-    draw_config : &common::DrawConfig,
+    draw_config : &ui::DrawConfig,
 ) -> Result<(), Box<dyn std::error::Error>> 
 where
     W: Write,
