@@ -17,7 +17,7 @@ use tui::{
 use super::{event, ui};
 
 pub fn run_client<B>(
-    mut client_config: common::json_structs::ClientConfig,
+    client_config: &common::json_structs::ClientConfig,
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
@@ -33,10 +33,10 @@ where
     terminal.clear()?;
 
     let result = loop {
-        match update_client(&mut events, &mut client_config, &mut state) {
+        match update_client(&mut events, client_config, &mut state) {
             Ok(should_contiue) => {
                 if should_contiue {
-                    if let Err(_e) = super::draw::draw_client(terminal, &mut client_config, &state)
+                    if let Err(_e) = super::draw::draw_client(terminal, client_config, &state)
                     {
                         break Ok(());
                     }
@@ -53,14 +53,13 @@ where
 
 fn update_client(
     events: &mut event::Events,
-    client_config: &mut ClientConfig,
+    client_config: &ClientConfig,
     ui_state: &mut ui::UIState,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     if let event::Event::Input(key) = events.next()? {
         if key == Key::Char(client_config.key_map.quit) {
             return Ok(false);
         }
-
         if key == Key::Char(client_config.key_map.left) && ui_state.percent_size_of_panes.0 > 0 {
             ui_state.percent_size_of_panes.0 -= 1;
             ui_state.percent_size_of_panes.1 += 1;
@@ -68,6 +67,9 @@ fn update_client(
         if key == Key::Char(client_config.key_map.right) && ui_state.percent_size_of_panes.1 > 0 {
             ui_state.percent_size_of_panes.0 += 1;
             ui_state.percent_size_of_panes.1 -= 1;
+        }
+        if key == Key::Char(client_config.key_map.help) {
+            
         }
     }
     Ok(true)

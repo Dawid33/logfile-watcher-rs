@@ -13,6 +13,7 @@ pub struct ClientConfig {
 #[derive(Serialize, Deserialize)]
 pub struct ShortcutKeyMap {
     pub quit: char,
+    pub help: char,
     pub left: char,
     pub right: char,
 }
@@ -34,6 +35,7 @@ impl Default for ShortcutKeyMap {
     fn default() -> Self {
         Self {
             quit: 'q',
+            help: '?',
             left: 'h',
             right: 'l',
         }

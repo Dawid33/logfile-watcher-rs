@@ -15,6 +15,10 @@ pub struct UIState {
     pub default_main_panel_title: String,
     pub debug: String,
 }
+pub enum UIMode {
+    Main,
+    Help
+}
 impl UIState {
     pub fn load_client_config(mut self, config: &ClientConfig) -> Self {
         self.background_color = draw::rgb_tuple_to_color(&config.ui_config.background_color);

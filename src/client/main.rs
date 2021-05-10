@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let stdout = io::stdout().into_raw_mode()?;
         let backend = TermionBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
-        run::run_client(config, &mut terminal)?;
+        run::run_client(&config, &mut terminal)?;
     } else if cfg!(windows) {
         unimplemented!("No windows implementation :)");
     }

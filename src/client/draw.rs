@@ -11,7 +11,7 @@ use tui::{
 
 pub fn draw_client<B>(
     terminal: &mut tui::Terminal<B>,
-    client_config: &mut ClientConfig,
+    client_config: &ClientConfig,
     ui_state: &ui::UIState,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
