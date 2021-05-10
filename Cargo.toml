@@ -15,8 +15,20 @@ rand = "0.8.3"
 
 [target.'cfg(windows)'.dependencies]
 crossterm = "0.17"
-tui = { version = "0.12", default-features = false, features = ['crossterm'] }
+tui = { version = "0.15", default-features = false, features = ['crossterm', 'serde'] }
 
 [target.'cfg(unix)'.dependencies]
-tui = "0.15"
+tui = { version = "0.15", default-features = false, features = ['termion', 'serde'] }
 termion = "1.5"
+
+[[bin]]
+name = "client"
+path = "src/client/main.rs"
+
+[[bin]]
+name = "server"
+path = "src/server/main.rs"
+
+[lib]
+name = "common"
+path = "src/common/lib.rs"

@@ -1,15 +1,14 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+extern crate common;
 
 use std::net::TcpListener;
 use std::thread;
 use tungstenite::server::accept;
 use url::Url;
 
-mod json;
-
-use json::*;
-use json_structs::*;
+use common::*;
+use common::json_structs::*;
 
 use tungstenite::{
     accept_hdr,
