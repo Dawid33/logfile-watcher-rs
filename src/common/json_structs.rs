@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use tui::style::Color;
 use url::Url;
 
 #[derive(Serialize, Deserialize)]

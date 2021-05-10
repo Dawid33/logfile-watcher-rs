@@ -69,7 +69,11 @@ fn update_client(
             ui_state.percent_size_of_panes.1 -= 1;
         }
         if key == Key::Char(client_config.key_map.help) {
-            
+            if let ui::UIMode::Help = ui_state.current_mode {
+                ui_state.current_mode = ui_state.previous_mode;
+            } else {
+                ui_state.current_mode = ui::UIMode::Help;
+            }
         }
     }
     Ok(true)

@@ -17,6 +17,21 @@ pub fn draw_client<B>(
 where
     B: Backend,
 {
+    match ui_state.current_mode {
+        ui::UIMode::Main => draw_main(terminal, client_config, ui_state)?,
+        ui::UIMode::Help => draw_help(terminal, client_config, ui_state)?,
+    }
+    Ok(())
+}
+
+pub fn draw_main<B>(
+    terminal: &mut tui::Terminal<B>,
+    client_config: &ClientConfig,
+    ui_state: &ui::UIState,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    B: Backend,
+{
     terminal.draw(|frame| {
         let size = frame.size();
         let outside_border = Block::default()
@@ -83,6 +98,41 @@ where
     Ok(())
 }
 
+pub fn draw_help<B>(
+    terminal: &mut tui::Terminal<B>,
+    client_config: &ClientConfig,
+    _ui_state: &ui::UIState,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    B: Backend,
+{
+    terminal.draw(|frame| {
+        let size = frame.size();
+        let outside_border = Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .style(Style::default().bg(rgb_tuple_to_color(
+                &client_config.ui_config.background_color,
+            )));
+        
+        let text = vec![
+            Spans::from("This is the help menu."),
+            Spans::from(format!("{} : quit the help menu", client_config.key_map.help)),
+            Spans::from(format!("{} : quit the application", client_config.key_map.quit)),
+            Spans::from(format!("{} and {} : resize the panes left and right", client_config.key_map.left,client_config.key_map.right)),
+        ];
+        let paragraph = Paragraph::new(text.clone());
+        let paragraph_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .margin(1)
+            .constraints([Constraint::Percentage(100)].as_ref(),)
+            .split(frame.size());
+
+        frame.render_widget(outside_border, size);
+        frame.render_widget(paragraph, paragraph_layout[0]);
+    })?;
+    Ok(())
+}
 pub fn rgb_tuple_to_color(rgb: &(u8, u8, u8)) -> Color {
     Color::Rgb(rgb.0, rgb.1, rgb.2)
 }

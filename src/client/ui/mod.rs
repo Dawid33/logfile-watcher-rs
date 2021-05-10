@@ -14,7 +14,10 @@ pub struct UIState {
     pub background_color: Color,
     pub default_main_panel_title: String,
     pub debug: String,
+    pub current_mode : UIMode,
+    pub previous_mode : UIMode,
 }
+#[derive(Copy,Clone)]
 pub enum UIMode {
     Main,
     Help
@@ -33,6 +36,8 @@ impl Default for UIState {
             background_color: Color::Black,
             debug: String::from("Debug"),
             default_main_panel_title: String::from("Viewer"),
+            current_mode : UIMode::Main,
+            previous_mode : UIMode::Main,
         }
     }
 }
