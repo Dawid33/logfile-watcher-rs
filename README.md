@@ -8,5 +8,7 @@ The main loop runs the run::update() function to update the client based on the 
 ## TODO:
 
 Rework the event loop mechanism
+
 Websocket api
+
 Serverside stuff
