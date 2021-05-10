@@ -110,7 +110,8 @@ where
         let size = frame.size();
         let outside_border = Block::default()
             .borders(Borders::ALL)
-            .border_type(BorderType::Rounded);
+            .border_type(BorderType::Rounded)
+            .style(Style::default().bg(config.client_ui_config.unwrap().background_color));
         frame.render_widget(outside_border, size);
 
         let sidebar_layout = Layout::default()

@@ -17,9 +17,9 @@ pub struct ShortcutKeyMap {
     pub right: char,
 }
 
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize, Deserialize,Clone,Copy)]
 pub struct ClientUIConfig {
-    background_color : Color,
+    pub background_color : Color,
 }
 
 impl Default for ClientUIConfig {

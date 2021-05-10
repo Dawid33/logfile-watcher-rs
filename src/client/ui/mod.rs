@@ -7,7 +7,7 @@ use common::json_structs::ClientUIConfig;
 pub mod list;
 pub struct DrawConfig {
     pub current_file_name : String,
-    client_ui_config : Option<ClientUIConfig>,
+    pub client_ui_config : Option<ClientUIConfig>,
 }
 
 impl Default for DrawConfig {
