@@ -3,36 +3,34 @@
 extern crate common;
 use common::json_structs::ClientConfig;
 
-use std::{io, io::Write, time::Duration, path::Path,sync::mpsc};
+use std::{io, io::Write, path::Path, sync::mpsc, time::Duration};
 #[cfg(unix)]
-use termion::{event::Key};
+use termion::event::Key;
 
 use tui::{
+    backend::Backend,
+    buffer::{Buffer, Cell},
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::{Span,Spans},
-    buffer::{Buffer,Cell},
-    widgets::{Block, BorderType, Borders,Paragraph},
-    backend::Backend,
+    text::{Span, Spans},
+    widgets::{Block, BorderType, Borders, Paragraph},
     Terminal,
 };
 
 #[cfg(unix)]
-use tui::backend::TermionBackend;
-#[cfg(unix)]
 use termion::raw::IntoRawMode;
 #[cfg(windows)]
 use tui::backend::CrosstermBackend;
+#[cfg(unix)]
+use tui::backend::TermionBackend;
 
-pub mod networking;
+mod draw;
 #[cfg(unix)]
 mod event;
-mod ui;
+pub mod networking;
 mod run;
-mod draw;
+mod ui;
 use ui::*;
-
-
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     //Configuration file for the client.
@@ -48,14 +46,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else if cfg!(windows) {
         unimplemented!("No windows implementation :)");
     }
-    
-    //Communication between threads.
-    //let (rx, _tx) = mpsc::channel::<tungstenite::error::Error>();
-    //networking::connect(config.url.clone(), rx.clone());
-    
+
     // If nothing is printed before exiting,the empty space
     // following the shell prompt is black for some reason
     // (in visual studio). So just print a new line :)
     println!("");
     Ok(())
 }
+
+//Communication between threads.
+//let (rx, _tx) = mpsc::channel::<tungstenite::error::Error>();
+//networking::connect(config.url.clone(), rx.clone());

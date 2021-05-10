@@ -7,8 +7,8 @@ use std::thread;
 use tungstenite::server::accept;
 use url::Url;
 
-use common::*;
 use common::json_structs::*;
+use common::*;
 
 use tungstenite::{
     accept_hdr,

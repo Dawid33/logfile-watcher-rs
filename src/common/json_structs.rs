@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use url::Url;
 use tui::style::Color;
+use url::Url;
 
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
@@ -17,15 +17,15 @@ pub struct ShortcutKeyMap {
     pub right: char,
 }
 
-#[derive(Serialize, Deserialize,Clone,Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct ClientUIConfig {
-    pub background_color : Color,
+    pub background_color: (u8, u8, u8),
 }
 
 impl Default for ClientUIConfig {
     fn default() -> Self {
         Self {
-            background_color : Color::Black,
+            background_color: (0, 0, 0),
         }
     }
 }
