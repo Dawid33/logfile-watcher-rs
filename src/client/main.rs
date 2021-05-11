@@ -24,9 +24,11 @@ use tui::backend::CrosstermBackend;
 #[cfg(unix)]
 use tui::backend::TermionBackend;
 
-mod draw;
-#[cfg(unix)]
+#[cfg_attr(windows, path = "src/client/events_crossterm.rs")]
+#[cfg_attr(unix, path = "events_termion.rs")]
 mod event;
+
+mod draw;
 pub mod networking;
 mod update;
 mod ui;
@@ -64,12 +66,15 @@ where
 {
     let mut state = ui::UIState::default().load_from_client_config(&client_config);
     state.sidebar_list.items = vec![
-        String::from("This is one sentence."),
-        String::from("This is another sentence."),
+        String::from("Item 1"),
+        String::from("Item 2"),
+        String::from("Item 3"),
+        String::from("Item 4"),
+        String::from("Item 5"),
     ];
     let mut events = event::Events::with_config(event::Config {
-        exit_key: Key::Char(client_config.key_map.quit),
-        tick_rate: Duration::from_millis(250),
+        exit_key: Key::from(client_config.key_map.quit),
+        tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
     events.enable_exit_key();
     terminal.clear()?;

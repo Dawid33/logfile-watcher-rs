@@ -4,11 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tui::layout::*;
 use tui::style::Color;
+use tui::text::Spans;
 use tui::widgets::*;
 
 pub mod list;
 
-pub struct UIState {
+pub struct UIState<'a> {
     pub current_file_path: Option<PathBuf>,
     pub percent_size_of_panes: (u16, u16),
     pub background_color: Color,
@@ -17,19 +18,20 @@ pub struct UIState {
     pub current_mode : UIMode,
     pub previous_mode : UIMode,
     pub sidebar_list : list::StatefulList<String>,
+    pub content : Vec<Spans<'a>>,
 }
 #[derive(Copy,Clone)]
 pub enum UIMode {
     Main,
     Help
 }
-impl UIState {
+impl UIState<'_> {
     pub fn load_from_client_config(mut self, config: &ClientConfig) -> Self {
         self.background_color = draw::rgb_tuple_to_color(&config.ui_config.background_color);
         self
     }
 }
-impl Default for UIState {
+impl Default for UIState<'_> {
     fn default() -> Self {
         Self {
             current_file_path: None,
@@ -40,6 +42,7 @@ impl Default for UIState {
             current_mode : UIMode::Main,
             previous_mode : UIMode::Main,
             sidebar_list : list::StatefulList::new(),
+            content : Vec::new(),
         }
     }
 }

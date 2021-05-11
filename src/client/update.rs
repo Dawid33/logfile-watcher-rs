@@ -22,36 +22,39 @@ pub fn update_client(
     ui_state: &mut ui::UIState,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     if let event::Event::Input(key) = events.next()? {
-        if key == Key::Char(client_config.key_map.quit) {
+        if key == client_config.key_map.quit.into() {
             return Ok(false);
         }
-        if key == Key::Char(client_config.key_map.left) && ui_state.percent_size_of_panes.0 > 2 {
+        if key == client_config.key_map.resize_left.into() && ui_state.percent_size_of_panes.0 > 2 {
             ui_state.percent_size_of_panes.0 -= 2;
             ui_state.percent_size_of_panes.1 += 2;
         }
-        if key == Key::Char(client_config.key_map.right) && ui_state.percent_size_of_panes.1 > 2 {
+        if key == client_config.key_map.resize_right.into() && ui_state.percent_size_of_panes.1 > 2 {
             ui_state.percent_size_of_panes.0 += 2;
             ui_state.percent_size_of_panes.1 -= 2;
         }
-        if key == Key::Char(client_config.key_map.help) {
+        if key == client_config.key_map.help.into() {
             if let ui::UIMode::Help = ui_state.current_mode {
                 ui_state.current_mode = ui_state.previous_mode;
             } else {
                 ui_state.current_mode = ui::UIMode::Help;
             }
         }
-        if key == Key::Char(client_config.key_map.reload_config) {
+        if key == client_config.key_map.reload_config.into() {
             let config = common::load_struct::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
             *client_config = config;
         }
-        if key == Key::Left {
-            ui_state.sidebar_list.unselect();
-        }
-        if key == Key::Down {
+        if key == client_config.key_map.up.into() {
             ui_state.sidebar_list.next();
+            ui_state.debug = ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()].clone();
+            ui_state.content.clear();
+            ui_state.content.push(Spans::from(ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()].clone()));
         }
-        if key == Key::Up {
+        if key == client_config.key_map.down.into() {
             ui_state.sidebar_list.previous();
+            ui_state.debug = ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()].clone();
+            ui_state.content.clear();
+            ui_state.content.push(Spans::from(ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()].clone()));
         }
     }
     Ok(true)
