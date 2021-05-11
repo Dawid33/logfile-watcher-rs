@@ -1,13 +1,9 @@
+use serde_json;
 use {
     log::*,
     serde::{Deserialize, Serialize},
-    std::{
-        fs,
-        io,
-        path::Path,
-    },
+    std::{fs, io, path::Path},
 };
-use serde_json;
 
 pub mod json_structs;
 
@@ -19,9 +15,7 @@ where
 {
     let json_read_result = try_read_json_file(path);
     match json_read_result {
-        Ok(file) => {
-            file
-        }
+        Ok(file) => file,
         Err(e) => {
             warn!("Cannot load json file at [{}] because {}. Creating new json file with default values...", path.display(),e);
             let default = T::default();

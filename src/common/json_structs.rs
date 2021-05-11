@@ -3,7 +3,7 @@ use {
     url::Url,
 };
 
-// Wrapper over the keys in other backends.
+// Wrapper over the keys enums in other backends e.g termion::event:Key
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Key {
     Backspace,
@@ -52,6 +52,7 @@ impl From<Key> for termion::event::Key {
     }
 }
 
+///User configuration that is stored as a json file.
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
     pub refersh_rate_miliseconds: u64,
@@ -61,6 +62,7 @@ pub struct ClientConfig {
     pub ui_config: ClientUIConfig,
 }
 
+///Keyboard controls
 #[derive(Serialize, Deserialize)]
 pub struct ShortcutKeyMap {
     pub quit: Key,
@@ -74,6 +76,7 @@ pub struct ShortcutKeyMap {
     pub reload_config: Key,
 }
 
+///Configuration specifically pertaining to the ui.
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct ClientUIConfig {
     pub background_color: (u8, u8, u8),

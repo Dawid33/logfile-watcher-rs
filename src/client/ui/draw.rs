@@ -7,9 +7,15 @@ use {
         style::{Color, Modifier, Style},
         text::{Span, Spans},
         widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
-    }
+    },
 };
 
+/**
+ * ## draw_client()
+ *  Draw the client using the handle to the `terminal`. tui works by creating instances of
+ *  "widgets" and passing them into a render function. The `ui_state` and `client_config`
+ *  dictate how to create these widgets.
+ */
 pub fn draw_client<B>(
     terminal: &mut tui::Terminal<B>,
     client_config: &ClientConfig,
@@ -35,6 +41,7 @@ where
 {
     terminal.draw(|frame| {
         let size = frame.size();
+        //Create a vec of ListItems (text objects) from the current ui_state.
         let items: Vec<ListItem> = ui_state
             .sidebar_list
             .items
@@ -54,6 +61,7 @@ where
                     .add_modifier(Modifier::BOLD),
             );
 
+        // Layout for the sidebar
         let sidebar_list = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(
@@ -65,6 +73,7 @@ where
             )
             .split(frame.size());
 
+        // Main content pane where data is displayed
         let content_panel = Block::default()
             .title(Span::from(match &ui_state.current_file_path {
                 Some(x) => String::from(x.file_name().unwrap().to_str().unwrap()),
@@ -72,10 +81,12 @@ where
             }))
             .borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
 
+        //Main content pane + the content to put inside it.
         let content = Paragraph::new(ui_state.content.clone())
             .block(content_panel)
             .wrap(Wrap { trim: false });
 
+        //Main content pane layout
         let content_panel_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(
@@ -86,12 +97,14 @@ where
                 .as_ref(),
             )
             .split(size);
+        //Render sidebar and content pane.
         frame.render_widget(content, content_panel_layout[1]);
         frame.render_stateful_widget(items, sidebar_list[0], &mut ui_state.sidebar_list.state);
     })?;
     Ok(())
 }
 
+/// Draw the help menu.
 pub fn draw_help<B>(
     terminal: &mut tui::Terminal<B>,
     client_config: &ClientConfig,

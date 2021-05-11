@@ -1,6 +1,4 @@
-use {
-    tui::widgets::ListState,
-};
+use tui::widgets::ListState;
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,

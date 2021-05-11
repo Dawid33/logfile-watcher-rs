@@ -1,21 +1,15 @@
-use {
-    std::{
-        io,
-        thread,
-        time::Duration,
-        sync::{
-            atomic::{AtomicBool, Ordering},
-            Arc,
-            mpsc,
-        },
+use std::{
+    io,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc, Arc,
     },
+    thread,
+    time::Duration,
 };
 
 #[cfg(unix)]
-use termion::{
-    event::Key,
-    input::TermRead,
-};
+use termion::{event::Key, input::TermRead};
 
 pub enum Event<I> {
     Input(I),

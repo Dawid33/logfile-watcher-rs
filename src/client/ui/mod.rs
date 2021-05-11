@@ -2,10 +2,7 @@ use {
     super::*,
     common::json_structs::ClientConfig,
     std::path::PathBuf,
-    tui::{
-        style::Color,
-        text::Spans,
-    }
+    tui::{style::Color, text::Spans},
 };
 
 pub mod draw;

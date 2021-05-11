@@ -1,11 +1,17 @@
-use {
-    common::json_structs::ClientConfig,
-    std::{path::Path},
-    tui::text::{Spans},
-};
+use {common::json_structs::ClientConfig, std::path::Path, tui::text::Spans};
 
 use super::{events, ui};
 
+/**
+ * ## update_client
+ *
+ *- ` events` is the event handler.
+ *- `client_config` is mutable in case the user wants to reload
+ *  the config file during runtime. \\
+ *- `ui_state` records ui_state for the draw_client() function \\
+ *
+ * Update the `ui_state` based on input from `events`.
+ */
 pub fn update_client(
     events: &mut events::Events,
     client_config: &mut ClientConfig,

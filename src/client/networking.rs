@@ -1,9 +1,6 @@
-use {
-    std::sync::mpsc::Sender,
-    tungstenite::Message,
-    url::Url,
-};
+use {std::sync::mpsc::Sender, tungstenite::Message, url::Url};
 
+/// W.I.P
 /// Creates a new connection to the specified url in a new thread.
 /// If the thread exits an error is sent over the mspc channel.
 pub fn connect(url: Url, rx: Sender<tungstenite::error::Error>) {
