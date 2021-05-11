@@ -15,6 +15,7 @@ pub struct ShortcutKeyMap {
     pub help: char,
     pub left: char,
     pub right: char,
+    pub reload_config: char,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -37,6 +38,7 @@ impl Default for ShortcutKeyMap {
             help: '?',
             left: 'h',
             right: 'l',
+            reload_config : 'r'
         }
     }
 }

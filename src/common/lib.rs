@@ -15,18 +15,18 @@ where
     let json_read_result = try_read_json_file(path);
     match json_read_result {
         Ok(file) => {
-            println!("Json file found at [{}]", path.display());
+            //println!("Json file found at [{}]", path.display());
             file
         }
-        Err(e) => {
-            println!("WARNING : Cannot load json file at [{}].", path.display());
-            println!("WARNING : {}", e);
-            println!("WARNING : Creating new json file with default values...");
+        Err(_e) => {
+            //println!("WARNING : Cannot load json file at [{}].", path.display());
+            //println!("WARNING : {}", _e);
+            //println!("WARNING : Creating new json file with default values...");
             let default = T::default();
 
-            if let Err(e) = try_write_json_file(&default, path) {
-                println!("ERROR : Cannot create json file at [{}].", path.display());
-                println!("ERROR : {}", e);
+            if let Err(_e) = try_write_json_file(&default, path) {
+                //println!("ERROR : Cannot create json file at [{}].", path.display());
+                //println!("ERROR : {}", _e);
             }
 
             default

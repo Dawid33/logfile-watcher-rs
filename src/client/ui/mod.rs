@@ -16,6 +16,7 @@ pub struct UIState {
     pub debug: String,
     pub current_mode : UIMode,
     pub previous_mode : UIMode,
+    pub sidebar_list : list::StatefulList<String>,
 }
 #[derive(Copy,Clone)]
 pub enum UIMode {
@@ -23,7 +24,7 @@ pub enum UIMode {
     Help
 }
 impl UIState {
-    pub fn load_client_config(mut self, config: &ClientConfig) -> Self {
+    pub fn load_from_client_config(mut self, config: &ClientConfig) -> Self {
         self.background_color = draw::rgb_tuple_to_color(&config.ui_config.background_color);
         self
     }
@@ -38,6 +39,7 @@ impl Default for UIState {
             default_main_panel_title: String::from("Viewer"),
             current_mode : UIMode::Main,
             previous_mode : UIMode::Main,
+            sidebar_list : list::StatefulList::new(),
         }
     }
 }
