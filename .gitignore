@@ -2,3 +2,4 @@
 Cargo.lock
 server_config.json
 client_config.json
+/logs

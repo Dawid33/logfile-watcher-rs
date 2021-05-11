@@ -1,12 +1,14 @@
-use super::draw;
-use common::json_structs::ClientConfig;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use tui::layout::*;
-use tui::style::Color;
-use tui::text::Spans;
-use tui::widgets::*;
+use {
+    super::*,
+    common::json_structs::ClientConfig,
+    std::path::PathBuf,
+    tui::{
+        style::Color,
+        text::Spans,
+    }
+};
 
+pub mod draw;
 pub mod list;
 
 pub struct UIState<'a> {
@@ -15,15 +17,16 @@ pub struct UIState<'a> {
     pub background_color: Color,
     pub default_main_panel_title: String,
     pub debug: String,
-    pub current_mode : UIMode,
-    pub previous_mode : UIMode,
-    pub sidebar_list : list::StatefulList<String>,
-    pub content : Vec<Spans<'a>>,
+    pub current_mode: UIMode,
+    pub previous_mode: UIMode,
+    pub sidebar_list: list::StatefulList<String>,
+    pub content: Vec<Spans<'a>>,
 }
-#[derive(Copy,Clone)]
+
+#[derive(Copy, Clone)]
 pub enum UIMode {
     Main,
-    Help
+    Help,
 }
 impl UIState<'_> {
     pub fn load_from_client_config(mut self, config: &ClientConfig) -> Self {
@@ -39,10 +42,10 @@ impl Default for UIState<'_> {
             background_color: Color::Black,
             debug: String::from("Debug"),
             default_main_panel_title: String::from("Viewer"),
-            current_mode : UIMode::Main,
-            previous_mode : UIMode::Main,
-            sidebar_list : list::StatefulList::new(),
-            content : Vec::new(),
+            current_mode: UIMode::Main,
+            previous_mode: UIMode::Main,
+            sidebar_list: list::StatefulList::new(),
+            content: Vec::new(),
         }
     }
 }

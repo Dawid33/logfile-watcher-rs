@@ -1,14 +1,21 @@
-use std::io;
-use std::sync::mpsc;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
+use {
+    std::{
+        io,
+        thread,
+        time::Duration,
+        sync::{
+            atomic::{AtomicBool, Ordering},
+            Arc,
+            mpsc,
+        },
+    },
 };
-use std::thread;
-use std::time::Duration;
 
-use termion::event::Key;
-use termion::input::TermRead;
+#[cfg(unix)]
+use termion::{
+    event::Key,
+    input::TermRead,
+};
 
 pub enum Event<I> {
     Input(I),
@@ -19,8 +26,10 @@ pub enum Event<I> {
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
     rx: mpsc::Receiver<Event<Key>>,
+    #[allow(dead_code)]
     input_handle: thread::JoinHandle<()>,
     ignore_exit_key: Arc<AtomicBool>,
+    #[allow(dead_code)]
     tick_handle: thread::JoinHandle<()>,
 }
 
@@ -40,6 +49,7 @@ impl Default for Config {
 }
 
 impl Events {
+    #[allow(dead_code)]
     pub fn new() -> Events {
         Events::with_config(Config::default())
     }
@@ -84,7 +94,7 @@ impl Events {
     pub fn next(&self) -> Result<Event<Key>, mpsc::RecvError> {
         self.rx.recv()
     }
-
+    #[allow(dead_code)]
     pub fn disable_exit_key(&mut self) {
         self.ignore_exit_key.store(true, Ordering::Relaxed);
     }

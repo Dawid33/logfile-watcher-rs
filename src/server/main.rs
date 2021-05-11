@@ -1,14 +1,7 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
 extern crate common;
 
-use std::net::TcpListener;
-use std::thread;
-use tungstenite::server::accept;
-use url::Url;
-
 use common::json_structs::*;
-use common::*;
+use std::net::TcpListener;
 
 use tungstenite::{
     accept_hdr,
@@ -16,7 +9,7 @@ use tungstenite::{
 };
 
 fn main() {
-    let config = load_struct::<ServerConfig>(std::path::Path::new("server_config.json"));
+    let config = common::load_struct::<ServerConfig>(std::path::Path::new("server_config.json"));
     let server = TcpListener::bind(&*config.url.socket_addrs(|| None).unwrap()).unwrap();
     for stream in server.incoming() {
         std::thread::spawn(move || {
@@ -47,6 +40,7 @@ fn main() {
     }
 }
 
+#[allow(dead_code)]
 fn handle_connection(
     websocket: &mut tungstenite::WebSocket<std::net::TcpStream>,
 ) -> Result<(), Box<dyn std::error::Error>> {

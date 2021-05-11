@@ -1,10 +1,10 @@
-use serde::{Deserialize, Serialize};
-use url::Url;
+use {
+    serde::{Deserialize, Serialize},
+    url::Url,
+};
 
-//This is a copy of termion::event::Key because termion doesnt use serde
-//And i dont feel like writing a serializer for it right now.
-//TODO : write serializer for termion::event::Key
-#[derive(Serialize, Deserialize,Debug,Clone,Copy)]
+// Wrapper over the keys in other backends.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Key {
     Backspace,
     Left,
@@ -23,12 +23,12 @@ pub enum Key {
     Alt(char),
     Ctrl(char),
     Null,
-    Esc
+    Esc,
 }
 
 #[cfg(unix)]
 impl From<Key> for termion::event::Key {
-    fn from(key : Key) -> termion::event::Key {
+    fn from(key: Key) -> termion::event::Key {
         match key {
             Key::Backspace => termion::event::Key::Backspace,
             Key::Left => termion::event::Key::Left,
@@ -54,14 +54,13 @@ impl From<Key> for termion::event::Key {
 
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
-    pub refersh_rate_miliseconds : u64,
+    pub refersh_rate_miliseconds: u64,
     pub url: Url,
     pub use_tui: bool,
     pub key_map: ShortcutKeyMap,
     pub ui_config: ClientUIConfig,
 }
 
-#[cfg(unix)]
 #[derive(Serialize, Deserialize)]
 pub struct ShortcutKeyMap {
     pub quit: Key,
@@ -98,8 +97,8 @@ impl Default for ShortcutKeyMap {
             resize_left: Key::Char('H'),
             resize_right: Key::Char('L'),
             up: Key::Char('j'),
-            down:Key::Char('k'),
-            reload_config : Key::Char('r')
+            down: Key::Char('k'),
+            reload_config: Key::Char('r'),
         }
     }
 }
@@ -108,7 +107,7 @@ impl Default for ClientConfig {
     fn default() -> Self {
         Self {
             url: Url::parse("ws://localhost:9001/socket").unwrap(),
-            refersh_rate_miliseconds : 250,
+            refersh_rate_miliseconds: 250,
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
             ui_config: ClientUIConfig::default(),

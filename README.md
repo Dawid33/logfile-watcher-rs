@@ -7,8 +7,6 @@
 ### General
 Rework the event loop mechanism
 
-Write serializer for termion::event::key in common/json_structs.rs
-
 Websocket api
 
 Serverside stuff

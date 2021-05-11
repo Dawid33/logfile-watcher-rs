@@ -1,8 +1,13 @@
-use serde::{Deserialize, Serialize};
+use {
+    log::*,
+    serde::{Deserialize, Serialize},
+    std::{
+        fs,
+        io,
+        path::Path,
+    },
+};
 use serde_json;
-use std::fs;
-use std::io;
-use std::path::Path;
 
 pub mod json_structs;
 
@@ -15,18 +20,15 @@ where
     let json_read_result = try_read_json_file(path);
     match json_read_result {
         Ok(file) => {
-            //println!("Json file found at [{}]", path.display());
             file
         }
-        Err(_e) => {
-            //println!("WARNING : Cannot load json file at [{}].", path.display());
-            //println!("WARNING : {}", _e);
-            //println!("WARNING : Creating new json file with default values...");
+        Err(e) => {
+            warn!("Cannot load json file at [{}] because {}. Creating new json file with default values...", path.display(),e);
             let default = T::default();
 
             if let Err(_e) = try_write_json_file(&default, path) {
-                //println!("ERROR : Cannot create json file at [{}].", path.display());
-                //println!("ERROR : {}", _e);
+                warn!("Cannot create json file at [{}].", path.display());
+                warn!("{}", e);
             }
 
             default

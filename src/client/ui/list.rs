@@ -1,4 +1,6 @@
-use tui::widgets::ListState;
+use {
+    tui::widgets::ListState,
+};
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -6,13 +8,15 @@ pub struct TabsState<'a> {
 }
 
 impl<'a> TabsState<'a> {
+    #[allow(dead_code)]
     pub fn new(titles: Vec<&'a str>) -> TabsState {
         TabsState { titles, index: 0 }
     }
+    #[allow(dead_code)]
     pub fn next(&mut self) {
         self.index = (self.index + 1) % self.titles.len();
     }
-
+    #[allow(dead_code)]
     pub fn previous(&mut self) {
         if self.index > 0 {
             self.index -= 1;
@@ -34,7 +38,7 @@ impl<T> StatefulList<T> {
             items: Vec::new(),
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_items(items: Vec<T>) -> StatefulList<T> {
         StatefulList {
             state: ListState::default(),
@@ -69,7 +73,7 @@ impl<T> StatefulList<T> {
         };
         self.state.select(Some(i));
     }
-
+    #[allow(dead_code)]
     pub fn unselect(&mut self) {
         self.state.select(None);
     }
