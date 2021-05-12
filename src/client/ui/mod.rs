@@ -9,14 +9,14 @@ pub mod draw;
 pub mod list;
 
 pub struct UIState<'a> {
-    pub current_file_path: Option<PathBuf>,
+    pub current_content_panel_title: String,
     pub percent_size_of_panes: (u16, u16),
     pub background_color: Color,
     pub default_main_panel_title: String,
     pub debug: String,
     pub current_mode: UIMode,
     pub previous_mode: UIMode,
-    pub sidebar_list: list::StatefulList<String>,
+    pub sidebar_list: list::StatefulList<(url::Url,String)>,
     pub content: Vec<Spans<'a>>,
 }
 
@@ -34,7 +34,7 @@ impl UIState<'_> {
 impl Default for UIState<'_> {
     fn default() -> Self {
         Self {
-            current_file_path: None,
+            current_content_panel_title: String::from("Default"),
             percent_size_of_panes: (20, 80),
             background_color: Color::Black,
             debug: String::from("Debug"),

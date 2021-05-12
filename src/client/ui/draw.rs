@@ -47,7 +47,7 @@ where
             .items
             .iter()
             .map(|i| {
-                let line = Spans::from(Span::styled(i.clone(), Style::default()));
+                let line = Spans::from(Span::styled(i.1.clone(), Style::default()));
                 ListItem::new(line).style(Style::default())
             })
             .collect();
@@ -75,10 +75,7 @@ where
 
         // Main content pane where data is displayed
         let content_panel = Block::default()
-            .title(Span::from(match &ui_state.current_file_path {
-                Some(x) => String::from(x.file_name().unwrap().to_str().unwrap()),
-                None => ui_state.debug.clone(),
-            }))
+            .title(Span::from(ui_state.current_content_panel_title.clone()))
             .borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
 
         //Main content pane + the content to put inside it.

@@ -1,4 +1,4 @@
-use {common::json_structs::ClientConfig, std::path::Path, tui::text::Spans};
+use {common::json_structs::ClientConfig, std::path::Path, tui::text::Spans,tui::text::Span,std::io,std::io::{BufRead}, log::*};
 
 use super::{events, ui};
 
@@ -9,60 +9,111 @@ use super::{events, ui};
  *- `client_config` is mutable in case the user wants to reload
  *  the config file during runtime. \\
  *- `ui_state` records ui_state for the draw_client() function \\
- *
+ *- (bool,bool) The first bool in the output tells the caller function
+ *  whether or not to exit the application. The second bool determines whether
+ *  or not to update the screen.
  * Update the `ui_state` based on input from `events`.
  */
 pub fn update_client(
     events: &mut events::Events,
     client_config: &mut ClientConfig,
     ui_state: &mut ui::UIState,
-) -> Result<bool, Box<dyn std::error::Error>> {
+) -> Result<(bool,bool), Box<dyn std::error::Error>> {
+    let should_draw = true;
     if let events::Event::Input(key) = events.next()? {
-        if key == client_config.key_map.quit.into() {
-            return Ok(false);
+        if key == client_config.key_map.quit {
+            return Ok((false,false));
         }
-        if key == client_config.key_map.resize_left.into() && ui_state.percent_size_of_panes.0 > 2 {
+        if key == client_config.key_map.resize_left && ui_state.percent_size_of_panes.0 > 2 {
             ui_state.percent_size_of_panes.0 -= 2;
             ui_state.percent_size_of_panes.1 += 2;
         }
-        if key == client_config.key_map.resize_right.into() && ui_state.percent_size_of_panes.1 > 2
+        if key == client_config.key_map.resize_right && ui_state.percent_size_of_panes.1 > 2
         {
             ui_state.percent_size_of_panes.0 += 2;
             ui_state.percent_size_of_panes.1 -= 2;
         }
-        if key == client_config.key_map.help.into() {
+        if key == client_config.key_map.help {
             if let ui::UIMode::Help = ui_state.current_mode {
                 ui_state.current_mode = ui_state.previous_mode;
             } else {
                 ui_state.current_mode = ui::UIMode::Help;
             }
         }
-        if key == client_config.key_map.reload_config.into() {
+        if key == client_config.key_map.reload_config {
             let config = common::load_struct::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
             *client_config = config;
         }
-        if key == client_config.key_map.up.into() {
+        if key == client_config.key_map.up {
             ui_state.sidebar_list.next();
-            ui_state.debug = ui_state.sidebar_list.items
-                [ui_state.sidebar_list.state.selected().unwrap()]
-            .clone();
-            ui_state.content.clear();
-            ui_state.content.push(Spans::from(
-                ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()]
-                    .clone(),
-            ));
         }
-        if key == client_config.key_map.down.into() {
+        if key == client_config.key_map.down {
+            // Highlight previous item in list
             ui_state.sidebar_list.previous();
-            ui_state.debug = ui_state.sidebar_list.items
-                [ui_state.sidebar_list.state.selected().unwrap()]
-            .clone();
-            ui_state.content.clear();
-            ui_state.content.push(Spans::from(
-                ui_state.sidebar_list.items[ui_state.sidebar_list.state.selected().unwrap()]
-                    .clone(),
-            ));
+            // Index of currently selected item.
+            let index = ui_state.sidebar_list.state.selected().unwrap();
+            // Url of the currently selected list item.
+            let url = ui_state.sidebar_list.items[index].0.clone();
+            // Set the name of the file as the title.
+            ui_state.current_content_panel_title = String::from(url.path());
+
+            
+            match load_url(&url) {
+                Ok(output) => {
+                    let mut new_output : Vec<Spans> = Vec::new();
+                    for s in output {
+                        new_output.push(Spans::from(Span::from(s)));
+                    }
+                    ui_state.content = new_output.clone();
+                    trace!("File [{}] successfully added to ui_state.content.", url.as_str());
+                }
+                Err(e) => error!("Cannot open url {}", url.as_str())
+            }
+            
         }
     }
-    Ok(true)
+    Ok((true,should_draw))
+}
+
+fn load_url(url : &url::Url) -> Result<Vec<String>, io::Error>{
+    match url.scheme() {
+        "file" => {
+            match read_file(url) {
+                Ok(content) => Ok(content),
+                Err(e) => {
+                    error!("Cannot read file path {}", url.as_str());
+                    Err(e)
+                }
+            }    
+        }
+        _ => {
+            error!("Unknown url scheme {} in url {}",url.scheme(),url.as_str());
+            Err(io::Error::from(io::ErrorKind::Other))
+        }
+    }   
+}
+
+fn read_file(url : &url::Url) -> Result<Vec<String>,io::Error>{
+    if let Ok(file_path) = url.to_file_path() {                  
+        if let Ok(file_handle) = std::fs::File::open(file_path) {
+            let mut buf_reader = std::io::BufReader::new(file_handle);
+            let mut buffer = String::new();
+            let mut output : Vec<String> = Vec::new();
+            trace!("Reading file [{}]", url.as_str());
+            while let Ok(x) = buf_reader.read_line(&mut buffer) {
+                if x == 0 {
+                    break
+                } else {
+                    output.push(buffer.clone());
+                }
+            }
+            Ok(output)
+        } else {
+            error!("Cannot open file using the url {}", url.as_str());
+            return Err(io::Error::from(io::ErrorKind::Other))
+        }
+    } else {
+        error!("Cannot turn the url [{}] to a file path.", url.as_str());
+        return Err(io::Error::from(io::ErrorKind::Other))
+    }
 }

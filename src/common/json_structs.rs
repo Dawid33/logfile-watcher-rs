@@ -4,7 +4,7 @@ use {
 };
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy,Eq,PartialEq)]
 pub enum Key {
     Backspace,
     Left,
@@ -24,30 +24,32 @@ pub enum Key {
     Ctrl(char),
     Null,
     Esc,
+    __IsNotComplete,
 }
 
 #[cfg(unix)]
-impl From<Key> for termion::event::Key {
-    fn from(key: Key) -> termion::event::Key {
+impl From<termion::event::Key> for Key{
+    fn from(key: termion::event::Key) -> Key{
         match key {
-            Key::Backspace => termion::event::Key::Backspace,
-            Key::Left => termion::event::Key::Left,
-            Key::Right => termion::event::Key::Right,
-            Key::Up => termion::event::Key::Up,
-            Key::Down => termion::event::Key::Down,
-            Key::Home => termion::event::Key::Home,
-            Key::End => termion::event::Key::End,
-            Key::PageUp => termion::event::Key::PageUp,
-            Key::PageDown => termion::event::Key::PageDown,
-            Key::BackTab => termion::event::Key::BackTab,
-            Key::Delete => termion::event::Key::Delete,
-            Key::Insert => termion::event::Key::Insert,
-            Key::F(x) => termion::event::Key::F(x),
-            Key::Char(c) => termion::event::Key::Char(c),
-            Key::Alt(c) => termion::event::Key::Alt(c),
-            Key::Ctrl(c) => termion::event::Key::Ctrl(c),
-            Key::Null => termion::event::Key::Null,
-            Key::Esc => termion::event::Key::Esc,
+            termion::event::Key::Backspace => Key::Backspace,
+            termion::event::Key::Left => Key::Left,
+            termion::event::Key::Right => Key::Right,
+            termion::event::Key::Up => Key::Up,
+            termion::event::Key::Down => Key::Down,
+            termion::event::Key::Home => Key::Home,
+            termion::event::Key::End => Key::End,
+            termion::event::Key::PageUp => Key::PageUp,
+            termion::event::Key::PageDown => Key::PageDown,
+            termion::event::Key::BackTab => Key::BackTab,
+            termion::event::Key::Delete => Key::Delete,
+            termion::event::Key::Insert => Key::Insert,
+            termion::event::Key::F(x) => Key::F(x),
+            termion::event::Key::Char(c) => Key::Char(c),
+            termion::event::Key::Alt(c) => Key::Alt(c),
+            termion::event::Key::Ctrl(c) => Key::Ctrl(c),
+            termion::event::Key::Null => Key::Null,
+            termion::event::Key::Esc => Key::Esc,
+            termion::event::Key::__IsNotComplete => Key::__IsNotComplete
         }
     }
 }

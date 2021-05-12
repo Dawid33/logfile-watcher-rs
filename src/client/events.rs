@@ -1,15 +1,18 @@
-use std::{
-    io,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        mpsc, Arc,
+use {
+    common::json_structs::Key,
+    std::{
+        io,
+        thread,
+        time::Duration,
+        sync::{
+            atomic::{AtomicBool, Ordering},
+            mpsc, Arc,
+        },
     },
-    thread,
-    time::Duration,
 };
 
 #[cfg(unix)]
-use termion::{event::Key, input::TermRead};
+use termion::{input::TermRead};
 
 pub enum Event<I> {
     Input(I),
@@ -20,10 +23,8 @@ pub enum Event<I> {
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
     rx: mpsc::Receiver<Event<Key>>,
-    #[allow(dead_code)]
     input_handle: thread::JoinHandle<()>,
     ignore_exit_key: Arc<AtomicBool>,
-    #[allow(dead_code)]
     tick_handle: thread::JoinHandle<()>,
 }
 
@@ -49,7 +50,7 @@ impl Events {
     }
 
     pub fn with_config(config: Config) -> Events {
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::channel::<Event<Key>>();
         let ignore_exit_key = Arc::new(AtomicBool::new(false));
         let input_handle = {
             let tx = tx.clone();
@@ -57,8 +58,9 @@ impl Events {
             thread::spawn(move || {
                 let stdin = io::stdin();
                 for evt in stdin.keys() {
-                    if let Ok(key) = evt {
-                        if let Err(err) = tx.send(Event::Input(key)) {
+                    if let Ok(raw_key) = evt {
+                        let key : Key = raw_key.into();
+                        if let Err(err) = tx.send(Event::Input(key.into())) {
                             eprintln!("{}", err);
                             return;
                         }

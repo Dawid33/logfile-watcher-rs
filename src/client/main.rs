@@ -67,15 +67,18 @@ where
     B: Backend,
 {
     let mut state = ui::UIState::default().load_from_client_config(&client_config);
+
+    let current_dir = std::env::current_dir()?;
+    let url1 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing1.txt"))).unwrap();
+    let url2 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing2.txt"))).unwrap();
+    let url3 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing3.txt"))).unwrap();
     state.sidebar_list.items = vec![
-        String::from("Item 1"),
-        String::from("Item 2"),
-        String::from("Item 3"),
-        String::from("Item 4"),
-        String::from("Item 5"),
+        (url1, String::from("Item 1")),
+        (url2, String::from("Item 2")),
+        (url3, String::from("Item 3")),
     ]; //tmp
     let mut events = events::Events::with_config(events::Config {
-        exit_key: Key::from(client_config.key_map.quit),
+        exit_key: client_config.key_map.quit,
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
     events.enable_exit_key();
@@ -84,11 +87,15 @@ where
 
     let result = loop {
         match update::update_client(&mut events, &mut client_config, &mut state) {
-            Ok(should_draw) => {
-                if should_draw {
-                    if let Err(_e) = ui::draw::draw_client(terminal, &client_config, &mut state) {
-                        break Ok(());
+            Ok((should_run,should_draw)) => {
+                if should_run {
+                    if should_draw {
+                        if let Err(_e) = ui::draw::draw_client(terminal, &client_config, &mut state) {
+                            break Ok(());
+                        }
                     }
+                } else {
+                    break Ok(())
                 }
             }
             Err(e) => break Err(e),
