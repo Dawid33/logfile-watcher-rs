@@ -52,7 +52,7 @@ pub fn update_client(
                 // Highlight previous item in list
                 ui_state.sidebar_list.previous();
             }
-            
+
             // Index of currently selected item.
             let index = ui_state.sidebar_list.state.selected().unwrap();
             // Url of the currently selected list item.
@@ -67,6 +67,7 @@ pub fn update_client(
                     for s in output {
                         new_output.push(Spans::from(Span::from(s)));
                     }
+                    ui_state.content.clear();
                     ui_state.content = new_output.clone();
                     trace!("File [{}] successfully added to ui_state.content.", url.as_str());
                 }
@@ -108,6 +109,7 @@ fn read_file(url : &url::Url) -> Result<Vec<String>,io::Error>{
                     break
                 } else {
                     output.push(buffer.clone());
+                    buffer.clear();
                 }
             }
             Ok(output)
