@@ -44,12 +44,15 @@ pub fn update_client(
             let config = common::load_struct::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
             *client_config = config;
         }
-        if key == client_config.key_map.up {
-            ui_state.sidebar_list.next();
-        }
-        if key == client_config.key_map.down {
-            // Highlight previous item in list
-            ui_state.sidebar_list.previous();
+        if key == client_config.key_map.up || key == client_config.key_map.down{
+            if key == client_config.key_map.up{
+                // Highlight next item in list
+                ui_state.sidebar_list.next();
+            } else if key == client_config.key_map.down {
+                // Highlight previous item in list
+                ui_state.sidebar_list.previous();
+            }
+            
             // Index of currently selected item.
             let index = ui_state.sidebar_list.state.selected().unwrap();
             // Url of the currently selected list item.
