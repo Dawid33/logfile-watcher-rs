@@ -2,7 +2,7 @@ extern crate chrono;
 extern crate common;
 
 use {
-    common::json_structs::ClientConfig,
+    common::configs::*,
     log::*,
     std::{io, path::Path, time::Duration},
     tui::{backend::Backend, Terminal},
@@ -11,14 +11,14 @@ use {
 #[cfg(windows)]
 use tui::backend::CrosstermBackend;
 #[cfg(unix)]
-use {termion::event::Key, termion::raw::IntoRawMode, tui::backend::TermionBackend};
+use {termion::raw::IntoRawMode, tui::backend::TermionBackend};
 
 mod events;
 pub mod networking;
 mod ui;
 mod update;
 
-pub const CONFIG_FILENAME: &str = "client_config.json";
+pub const CONFIG_FILENAME: &str = "client_config.toml";
 pub const LOGS_DIR_NAME: &str = "logs";
 const MAX_AMOUNT_OF_LOGS: u16 = 1;
 const DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP: bool = false;
@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //Configuration file for the client.
     let path = Path::new(CONFIG_FILENAME);
-    let config = common::load_struct::<ClientConfig>(path);
+    let config = common::load_struct_toml::<ClientConfig>(path);
 
     //Run code for tui.
     if cfg!(unix) {
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  * are passed into update_client() and draw_client().
  */
 pub fn run_client<B>(
-    mut client_config: common::json_structs::ClientConfig,
+    mut client_config: common::configs::ClientConfig,
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>>
 where

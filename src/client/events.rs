@@ -1,5 +1,5 @@
 use {
-    common::json_structs::Key,
+    common::configs::*,
     std::{
         io,
         thread,

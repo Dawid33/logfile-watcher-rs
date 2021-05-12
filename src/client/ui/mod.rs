@@ -1,6 +1,6 @@
 use {
     super::*,
-    common::json_structs::ClientConfig,
+    common::configs::*,
     std::path::PathBuf,
     tui::{style::Color, text::Spans},
 };

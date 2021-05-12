@@ -1,6 +1,6 @@
 use {
     super::*,
-    common::json_structs::ClientConfig,
+    common::configs::*,
     tui::{
         backend::Backend,
         layout::{Constraint, Direction, Layout},

@@ -1,0 +1,41 @@
+refersh_rate_miliseconds = 50
+url = "ws://localhost:9001/socket"
+use_tui = true
+[key_map.quit]
+key_type = "Char"
+char = "q"
+
+[key_map.help]
+key_type = "Char"
+char = "?"
+
+[key_map.left]
+key_type = "Char"
+char = "h"
+
+[key_map.right]
+key_type = "Char"
+char = "l"
+
+[key_map.resize_left]
+key_type = "Char"
+char = "H"
+
+[key_map.resize_right]
+key_type = "Char"
+char = "L"
+
+[key_map.up]
+key_type = "Char"
+char = "j"
+
+[key_map.down]
+key_type = "Char"
+char = "k"
+
+[key_map.reload_config]
+key_type = "Char"
+char = "r"
+
+[ui_config]
+background_color = [0, 0, 0]

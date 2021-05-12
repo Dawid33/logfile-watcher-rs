@@ -5,6 +5,7 @@ use {
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
 #[derive(Serialize, Deserialize, Debug, Clone, Copy,Eq,PartialEq)]
+#[serde(tag = "key_type", content = "char")]
 pub enum Key {
     Backspace,
     Left,
@@ -24,7 +25,6 @@ pub enum Key {
     Ctrl(char),
     Null,
     Esc,
-    __IsNotComplete,
 }
 
 #[cfg(unix)]
@@ -49,7 +49,7 @@ impl From<termion::event::Key> for Key{
             termion::event::Key::Ctrl(c) => Key::Ctrl(c),
             termion::event::Key::Null => Key::Null,
             termion::event::Key::Esc => Key::Esc,
-            termion::event::Key::__IsNotComplete => Key::__IsNotComplete
+            _ => Key::Null,
         }
     }
 }
@@ -112,7 +112,7 @@ impl Default for ClientConfig {
     fn default() -> Self {
         Self {
             url: Url::parse("ws://localhost:9001/socket").unwrap(),
-            refersh_rate_miliseconds: 250,
+            refersh_rate_miliseconds: 50,
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
             ui_config: ClientUIConfig::default(),
