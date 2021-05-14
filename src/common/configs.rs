@@ -89,9 +89,7 @@ impl Default for ClientUIConfig {
         Self {
             background_color: (0, 0, 0),
             default_urls : vec![
-                std::path::Path::new("file://assets/testing1.txt"),
-                std::path::Path::new("file://assets/testing2.txt"),
-                std::path::Path::new("file://assets/testing3.txt"),
+                Url::from_file_path(std::env::current_dir().unwrap().join("latest.log")).unwrap(),
             ],
         }
     }

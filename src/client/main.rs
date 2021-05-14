@@ -25,8 +25,12 @@ const DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP: bool = false;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
-        start_logger();
-        info!("Running in debug mode.")
+        //start_logger();
+        if let Err(e) = std::fs::File::open("latest.log") {
+            std::fs::File::create("lastest.log").unwrap();
+        }
+        simple_logging::log_to_file("latest.log", LevelFilter::Trace).unwrap();
+        info!("Running in debug mode.");
     } else {
         simple_logging::log_to_stderr(LevelFilter::Warn);
     }
@@ -67,20 +71,18 @@ where
     B: Backend,
 {
     let mut state = ui::UIState::default().load_from_client_config(&client_config);
+    
+    state.sidebar_list.items = client_config.ui_config.default_urls.iter().map(|path|{
+        let items = path.path_segments().ok_or_else(|| "cannot be base").unwrap();
+        let items : Vec<&str> = items.collect();
+        (path.clone(), String::from(*items.last().unwrap()))
+    }).collect();
 
-    let current_dir = std::env::current_dir()?;
-    let url1 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing1.txt"))).unwrap();
-    let url2 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing2.txt"))).unwrap();
-    let url3 = url::Url::from_file_path(current_dir.join(Path::new("assets/testing3.txt"))).unwrap();
-    state.sidebar_list.items = vec![
-        (url1, String::from("Item 1")),
-        (url2, String::from("Item 2")),
-        (url3, String::from("Item 3")),
-    ]; //tmp
     let mut events = events::Events::with_config(events::Config {
         exit_key: client_config.key_map.quit,
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
+
     events.enable_exit_key();
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
@@ -106,7 +108,7 @@ where
     result
 }
 
-///This whole function is a bit nasty. fix at some point. Only works in debug mode.
+/*
 fn start_logger() {
     // Create directory to store logs.
     let directory : std::fs::ReadDir = std::fs::read_dir(LOGS_DIR_NAME).or_else::<std::fs::ReadDir,_>(|x| {
@@ -147,3 +149,4 @@ fn start_logger() {
     };
     simple_logging::log_to_file(logfile_name, LevelFilter::Info).unwrap();
 }
+*/

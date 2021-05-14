@@ -1,3 +1,0 @@
-name = 'hello'
-url = 'ws://localhost:9001/socket'
-use_tui = true

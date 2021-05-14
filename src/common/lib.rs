@@ -18,15 +18,21 @@ where
     match json_read_result {
         Ok(file) => file,
         Err(e) => {
-            warn!("Cannot load json file at [{}] because {}. Creating new json file with default values...", path.display(),e);
-            let default = T::default();
-
-            if let Err(_e) = try_write_json_file(&default, path) {
-                warn!("Cannot create json file at [{}].", path.display());
-                warn!("{}", e);
-            }
-
-            default
+            let result = match e.classify() {
+                serde_json::error::Category::Io => {
+                    let default = T::default();
+                    if let Err(_e) = try_write_json_file(&default, path) {
+                        warn!("Cannot create json file at [{}].", path.display());
+                        warn!("{}", e);
+                    }
+                    default
+                },
+                _ => {
+                    warn!("Cannot load json file at [{}] because {}. Starting with default values...", path.display(),e);
+                    T::default()
+                }
+            };
+            result
         }
     }
 }
