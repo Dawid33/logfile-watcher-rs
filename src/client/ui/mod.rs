@@ -16,7 +16,7 @@ pub struct UIState<'a> {
     pub debug: String,
     pub current_mode: UIMode,
     pub previous_mode: UIMode,
-    pub sidebar_list: list::StatefulList<(url::Url,String)>,
+    pub sidebar_list: list::StatefulList<(url::Url, String)>,
     pub content: Vec<Spans<'a>>,
 }
 

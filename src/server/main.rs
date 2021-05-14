@@ -9,7 +9,8 @@ use tungstenite::{
 };
 
 fn main() {
-    let config = common::load_struct_toml::<ServerConfig>(std::path::Path::new("server_config.toml"));
+    let config =
+        common::load_struct_toml::<ServerConfig>(std::path::Path::new("server_config.toml"));
     let server = TcpListener::bind(&*config.url.socket_addrs(|| None).unwrap()).unwrap();
     for stream in server.incoming() {
         std::thread::spawn(move || {

@@ -2,11 +2,11 @@ use serde_json;
 use {
     log::*,
     serde::{Deserialize, Serialize},
-    std::{fs, io, path::Path,io::BufReader,io::BufWriter,io::Read,io::Write},
+    std::{fs, io, io::BufReader, io::BufWriter, io::Read, io::Write, path::Path},
 };
 
-pub mod json;
 pub mod configs;
+pub mod json;
 
 /// Try loading in struct from json file. If json file does not exist, load in
 /// default values for the struct and create a new file with those values.
@@ -26,9 +26,13 @@ where
                         warn!("{}", e);
                     }
                     default
-                },
+                }
                 _ => {
-                    warn!("Cannot load json file at [{}] because {}. Starting with default values...", path.display(),e);
+                    warn!(
+                        "Cannot load json file at [{}] because {}. Starting with default values...",
+                        path.display(),
+                        e
+                    );
                     T::default()
                 }
             };
@@ -98,13 +102,21 @@ where
         Ok(file_handle) => {
             let mut buf_reader_handle = BufReader::new(file_handle);
             let mut buf = String::new();
-            if let Err(e) = buf_reader_handle.read_to_string(&mut buf){
-                error!("Cannot read toml file [{}] because {}",path.to_str().unwrap(),e)
+            if let Err(e) = buf_reader_handle.read_to_string(&mut buf) {
+                error!(
+                    "Cannot read toml file [{}] because {}",
+                    path.to_str().unwrap(),
+                    e
+                )
             }
             match toml::from_str(buf.as_str()) {
                 Ok(config) => Ok(config),
                 Err(e) => {
-                    error!("Cannot deserialize contents of the file [{}] because {}",path.to_str().unwrap(),e);
+                    error!(
+                        "Cannot deserialize contents of the file [{}] because {}",
+                        path.to_str().unwrap(),
+                        e
+                    );
                     Err(e.into())
                 }
             }
@@ -122,11 +134,10 @@ where
     match file_handle_result {
         Ok(file_handle) => {
             let mut buf_writer_handle = BufWriter::new(file_handle);
-            let buf : String = toml::to_string(config).unwrap();
+            let buf: String = toml::to_string(config).unwrap();
             buf_writer_handle.write(buf.as_str().as_bytes()).unwrap();
             Ok(())
         }
         Err(e) => Err(e.into()),
     }
 }
-

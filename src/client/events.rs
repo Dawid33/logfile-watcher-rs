@@ -2,17 +2,17 @@ use {
     common::configs::*,
     std::{
         io,
-        thread,
-        time::Duration,
         sync::{
             atomic::{AtomicBool, Ordering},
             mpsc, Arc,
         },
+        thread,
+        time::Duration,
     },
 };
 
 #[cfg(unix)]
-use termion::{input::TermRead};
+use termion::input::TermRead;
 
 pub enum Event<I> {
     Input(I),
@@ -59,7 +59,7 @@ impl Events {
                 let stdin = io::stdin();
                 for evt in stdin.keys() {
                     if let Ok(raw_key) = evt {
-                        let key : Key = raw_key.into();
+                        let key: Key = raw_key.into();
                         if let Err(err) = tx.send(Event::Input(key.into())) {
                             eprintln!("{}", err);
                             return;

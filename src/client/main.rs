@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 extern crate chrono;
 extern crate common;
 
@@ -20,8 +23,8 @@ mod update;
 
 pub const CONFIG_FILENAME: &str = "client_config.toml";
 pub const LOGS_DIR_NAME: &str = "logs";
-const MAX_AMOUNT_OF_LOGS: u16 = 1;
-const DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP: bool = false;
+//const MAX_AMOUNT_OF_LOGS: u16 = 1;
+//const DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP: bool = false;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
@@ -71,12 +74,20 @@ where
     B: Backend,
 {
     let mut state = ui::UIState::default().load_from_client_config(&client_config);
-    
-    state.sidebar_list.items = client_config.ui_config.default_urls.iter().map(|path|{
-        let items = path.path_segments().ok_or_else(|| "cannot be base").unwrap();
-        let items : Vec<&str> = items.collect();
-        (path.clone(), String::from(*items.last().unwrap()))
-    }).collect();
+
+    state.sidebar_list.items = client_config
+        .ui_config
+        .default_urls
+        .iter()
+        .map(|path| {
+            let items = path
+                .path_segments()
+                .ok_or_else(|| "cannot be base")
+                .unwrap();
+            let items: Vec<&str> = items.collect();
+            (path.clone(), String::from(*items.last().unwrap()))
+        })
+        .collect();
 
     let mut events = events::Events::with_config(events::Config {
         exit_key: client_config.key_map.quit,
@@ -89,15 +100,16 @@ where
 
     let result = loop {
         match update::update_client(&mut events, &mut client_config, &mut state) {
-            Ok((should_run,should_draw)) => {
+            Ok((should_run, should_draw)) => {
                 if should_run {
                     if should_draw {
-                        if let Err(_e) = ui::draw::draw_client(terminal, &client_config, &mut state) {
+                        if let Err(_e) = ui::draw::draw_client(terminal, &client_config, &mut state)
+                        {
                             break Ok(());
                         }
                     }
                 } else {
-                    break Ok(())
+                    break Ok(());
                 }
             }
             Err(e) => break Err(e),

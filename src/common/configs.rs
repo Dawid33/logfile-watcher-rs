@@ -4,7 +4,7 @@ use {
 };
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
-#[derive(Serialize, Deserialize, Debug, Clone, Copy,Eq,PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
 #[serde(tag = "key_type", content = "char")]
 pub enum Key {
     Backspace,
@@ -27,8 +27,8 @@ pub enum Key {
     Esc,
 }
 #[cfg(unix)]
-impl From<termion::event::Key> for Key{
-    fn from(key: termion::event::Key) -> Key{
+impl From<termion::event::Key> for Key {
+    fn from(key: termion::event::Key) -> Key {
         match key {
             termion::event::Key::Backspace => Key::Backspace,
             termion::event::Key::Left => Key::Left,
@@ -81,16 +81,17 @@ pub struct ShortcutKeyMap {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ClientUIConfig {
     pub background_color: (u8, u8, u8),
-    pub default_urls : Vec<Url>,
+    pub default_urls: Vec<Url>,
 }
 
 impl Default for ClientUIConfig {
     fn default() -> Self {
         Self {
             background_color: (0, 0, 0),
-            default_urls : vec![
-                Url::from_file_path(std::env::current_dir().unwrap().join("latest.log")).unwrap(),
-            ],
+            default_urls: vec![Url::from_file_path(
+                std::env::current_dir().unwrap().join("latest.log"),
+            )
+            .unwrap()],
         }
     }
 }
