@@ -26,7 +26,6 @@ pub enum Key {
     Null,
     Esc,
 }
-
 #[cfg(unix)]
 impl From<termion::event::Key> for Key{
     fn from(key: termion::event::Key) -> Key{
@@ -79,15 +78,21 @@ pub struct ShortcutKeyMap {
 }
 
 ///Configuration specifically pertaining to the ui.
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ClientUIConfig {
     pub background_color: (u8, u8, u8),
+    pub default_urls : Vec<Url>,
 }
 
 impl Default for ClientUIConfig {
     fn default() -> Self {
         Self {
             background_color: (0, 0, 0),
+            default_urls : vec![
+                std::path::Path::new("file://assets/testing1.txt"),
+                std::path::Path::new("file://assets/testing2.txt"),
+                std::path::Path::new("file://assets/testing3.txt"),
+            ],
         }
     }
 }
