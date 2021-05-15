@@ -19,7 +19,7 @@ where
         Ok(file) => file,
         Err(e) => {
             let result = match e.classify() {
-                serde_json::error::Category::Io => {
+                serde_json::error::Category::Data => {
                     let default = T::default();
                     if let Err(_e) = try_write_json_file(&default, path) {
                         warn!("Cannot create json file at [{}].", path.display());
