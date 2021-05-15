@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Err(e) = std::fs::File::open("latest.log") {
             std::fs::File::create("lastest.log").unwrap();
         }
-        simple_logging::log_to_file("latest.log", LevelFilter::Trace).unwrap();
+        simple_logging::log_to_file("latest.log", LevelFilter::Info).unwrap();
         info!("Running in debug mode.");
     } else {
         simple_logging::log_to_stderr(LevelFilter::Warn);

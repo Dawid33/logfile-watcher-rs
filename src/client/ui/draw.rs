@@ -79,11 +79,25 @@ where
             .borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
 
         //Main content pane + the content to put inside it.
-        let content = Paragraph::new(ui_state.content.clone())
+        let mut cnt : u16 = 0;
+
+        for s in ui_state.content.iter().rev() {
+            cnt += (s.width() as u16 / size.width) + 1;
+            //info!("s.width() : {}, size.width : {}, cnt : {},", s.width(),size.width,cnt);
+            if cnt > size.height {
+                break;
+            }
+        }
+        let mut new = ui_state.content.clone();
+        if new.len() > 5 {
+            new = new.split_off(cnt as usize);
+        }
+
+        let content = Paragraph::new(new)
             .block(content_panel)
             .wrap(Wrap { trim: false });
 
-        //Main content pane layout
+        //Main content pane layoutj
         let content_panel_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(

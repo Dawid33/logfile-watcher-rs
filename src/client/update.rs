@@ -55,6 +55,7 @@ fn handle_keyboard_input(
     if key == client_config.key_map.reload_config {
         //let config = common::load_struct_toml::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
         //*client_config = config;
+        info!("pressed a key");
     }
     if key == client_config.key_map.up || key == client_config.key_map.down {
         if key == client_config.key_map.up {

@@ -1,11 +1,12 @@
 use {
-    serde::{Deserialize, Serialize},
+    serde::{Deserialize, Deserializer, Serialize, Serializer},
+    serde::de::{self, Visitor},
     url::Url,
+    std::fmt,
 };
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
-#[serde(tag = "key_type", content = "char")]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Key {
     Backspace,
     Left,
@@ -26,6 +27,45 @@ pub enum Key {
     Null,
     Esc,
 }
+
+impl Serialize for Key {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match &self {
+            Key::Char(c) => serializer.collect_str(c),
+            _ => {
+                serializer.collect_str("NULL")
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Key {
+    fn deserialize<D>(deserializer: D) -> Result<Key, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(KeyStringVisitor)
+    }
+}
+
+struct KeyStringVisitor;
+impl<'de> Visitor<'de> for KeyStringVisitor {
+    type Value = Key;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("an integer between -2^31 and 2^31")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(Key::Char(value.chars().next().unwrap()))
+    }
+}
+
 #[cfg(unix)]
 impl From<termion::event::Key> for Key {
     fn from(key: termion::event::Key) -> Key {
