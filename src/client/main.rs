@@ -9,6 +9,8 @@ use {
     log::*,
     std::{io, path::Path, time::Duration},
     tui::{backend::Backend, Terminal},
+    tui::text::Spans,
+    std::sync,
 };
 
 #[cfg(windows)]
@@ -22,6 +24,13 @@ mod ui;
 mod update;
 
 pub const CONFIG_FILENAME: &str = "client_config.toml";
+
+pub struct ProgramState<'a> {
+    pub events : events::Events,
+    pub ui_state : ui::UIState<'a>,
+    pub client_config : common::configs::ClientConfig,
+
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
@@ -63,15 +72,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  * are passed into update_client() and draw_client().
  */
 pub fn run_client<B>(
-    mut client_config: common::configs::ClientConfig,
+    client_config: common::configs::ClientConfig,
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
-    let mut state = ui::UIState::default().load_from_client_config(&client_config);
+    let mut ui_state = ui::UIState::default().load_from_client_config(&client_config);
 
-    state.sidebar_list.items = client_config
+    // Get the default sidebar items from the configuration file.
+    ui_state.sidebar_list.items = client_config
         .ui_config
         .default_urls
         .iter()
@@ -84,22 +94,29 @@ where
             (path.clone(), String::from(*items.last().unwrap()))
         })
         .collect();
-
+    
+    
+    // Initialize event loop.
     let mut events = events::Events::with_config(events::Config {
         exit_key: client_config.key_map.quit,
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
-
     events.enable_exit_key();
+
+    let mut program_state = ProgramState {
+        events: events,
+        ui_state: ui_state,
+        client_config:client_config,
+    };
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
 
     let result = loop {
-        match update::update_client(&mut events, &mut client_config, &mut state) {
+        match update::update_client(&mut program_state) {
             Ok((should_run, should_draw)) => {
                 if should_run {
                     if should_draw {
-                        if let Err(_e) = ui::draw::draw_client(terminal, &client_config, &mut state)
+                        if let Err(_e) = ui::draw::draw_client(terminal, &mut program_state)
                         {
                             break Ok(());
                         }

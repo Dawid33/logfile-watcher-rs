@@ -1,6 +1,6 @@
 use {common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
 
-use super::{events, ui};
+use super::{events, ui, ProgramState};
 
 /**
  * ## update_client
@@ -14,14 +14,10 @@ use super::{events, ui};
  *  or not to update the screen.
  * Update the `ui_state` based on input from `events`.
  */
-pub fn update_client(
-    events: &mut events::Events,
-    client_config: &mut ClientConfig,
-    ui_state: &mut ui::UIState,
-) -> Result<(bool, bool), Box<dyn std::error::Error>> {
-    match events.next()? {
+pub fn update_client(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
+    match program_state.events.next()? {
         events::Event::Input(key) => {
-            return handle_keyboard_input(key, ui_state, client_config);
+            return handle_keyboard_input(key, program_state);
         }
         events::Event::Tick => {
             return Ok((true, true));
@@ -31,9 +27,11 @@ pub fn update_client(
 
 fn handle_keyboard_input(
     key: common::configs::Key,
-    ui_state: &mut ui::UIState,
-    client_config: &mut common::configs::ClientConfig,
+    program_state : &mut ProgramState,
 ) -> Result<(bool, bool), Box<dyn std::error::Error>> {
+    let client_config = &mut program_state.client_config;
+    let ui_state = &mut program_state.ui_state;
+
     if key == client_config.key_map.quit {
         return Ok((false, false));
     }

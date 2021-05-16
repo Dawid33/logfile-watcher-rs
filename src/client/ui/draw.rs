@@ -18,28 +18,29 @@ use {
  */
 pub fn draw_client<B>(
     terminal: &mut tui::Terminal<B>,
-    client_config: &ClientConfig,
-    ui_state: &mut UIState,
+    program_state : &mut ProgramState
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
-    match ui_state.current_mode {
-        UIMode::Main => draw_main(terminal, client_config, ui_state)?,
-        UIMode::Help => draw_help(terminal, client_config, ui_state)?,
+    match program_state.ui_state.current_mode {
+        UIMode::Main => draw_main(terminal, program_state)?,
+        UIMode::Help => draw_help(terminal, program_state)?,
     }
     Ok(())
 }
 
 pub fn draw_main<B>(
     terminal: &mut tui::Terminal<B>,
-    _client_config: &ClientConfig,
-    ui_state: &mut UIState,
+    program_state : &mut ProgramState
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
     terminal.draw(|frame| {
+        let ui_state = &mut program_state.ui_state;
+        let client_config = &mut program_state.client_config;
+
         let size = frame.size();
         //Create a vec of ListItems (text objects) from the current ui_state.
         let items: Vec<ListItem> = ui_state
@@ -118,13 +119,15 @@ where
 /// Draw the help menu.
 pub fn draw_help<B>(
     terminal: &mut tui::Terminal<B>,
-    client_config: &ClientConfig,
-    _ui_state: &UIState,
+    program_state : &mut ProgramState
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
     terminal.draw(|frame| {
+        let ui_state = &mut program_state.ui_state;
+        let client_config = &mut program_state.client_config;
+
         let text = vec![
             Spans::from(format!(
                 "{:?} : quit the help menu.",
