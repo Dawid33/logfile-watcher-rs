@@ -22,14 +22,10 @@ mod ui;
 mod update;
 
 pub const CONFIG_FILENAME: &str = "client_config.toml";
-pub const LOGS_DIR_NAME: &str = "logs";
-//const MAX_AMOUNT_OF_LOGS: u16 = 1;
-//const DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP: bool = false;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
-        //start_logger();
-        if let Err(e) = std::fs::File::open("latest.log") {
+        if let Err(_e) = std::fs::File::open("latest.log") {
             std::fs::File::create("lastest.log").unwrap();
         }
         simple_logging::log_to_file("latest.log", LevelFilter::Info).unwrap();

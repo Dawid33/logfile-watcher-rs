@@ -4,4 +4,4 @@
 
 <img src="./assets/readme.gif" alt="Demo of logfile-watcher gif">
 
-`logfile-watcher-rs` is a client + server application that allows real time viewing of remote files over a websocket. Both the client and server use a documented json for configuration.
+`logfile-watcher-rs` consists of a client and server application that allows real time remote viewing of files over a websocket. Configuration for the application is stored in a toml file. An example configuration can be found [here](./client_config.toml)
