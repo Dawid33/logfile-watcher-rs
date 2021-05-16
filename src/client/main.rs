@@ -29,7 +29,7 @@ pub struct ProgramState<'a> {
     pub events : events::Events,
     pub ui_state : ui::UIState<'a>,
     pub client_config : common::configs::ClientConfig,
-
+    pub cache : ui::cache::UICache,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -103,10 +103,14 @@ where
     });
     events.enable_exit_key();
 
+    let cache = ui::cache::UICache {
+
+    };
     let mut program_state = ProgramState {
         events: events,
         ui_state: ui_state,
         client_config:client_config,
+        cache:cache,
     };
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;

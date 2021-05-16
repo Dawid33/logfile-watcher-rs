@@ -39,7 +39,6 @@ where
 {
     terminal.draw(|frame| {
         let ui_state = &mut program_state.ui_state;
-        let client_config = &mut program_state.client_config;
 
         let size = frame.size();
         //Create a vec of ListItems (text objects) from the current ui_state.
@@ -125,7 +124,6 @@ where
     B: Backend,
 {
     terminal.draw(|frame| {
-        let ui_state = &mut program_state.ui_state;
         let client_config = &mut program_state.client_config;
 
         let text = vec![
