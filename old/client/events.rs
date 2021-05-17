@@ -23,8 +23,8 @@ pub enum Event<I> {
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
     rx: mpsc::Receiver<Event<Key>>,
-    input_handle: thread::JoinHandle<()>,
     ignore_exit_key: Arc<AtomicBool>,
+    input_handle: thread::JoinHandle<()>,
     tick_handle: thread::JoinHandle<()>,
 }
 
