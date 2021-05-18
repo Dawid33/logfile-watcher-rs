@@ -15,7 +15,7 @@ mod termion_backend {
 #[cfg(unix)]
 use termion_backend::*;
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Config {
     pub ui_refresh_rate: std::time::Duration,
     pub exit_key: Key,
@@ -26,7 +26,15 @@ pub enum Event {
     Tick,
 }
 
+/*
 #[derive(Copy, Clone, PartialEq)]
+pub enum UIEvent {
+    QuitProgram,
+    ReloadConfig,
+}
+*/
+
+#[derive(Clone, PartialEq)]
 pub enum Key {
     Char(char),
     Alt(char),
@@ -34,8 +42,20 @@ pub enum Key {
     NotImplemented,
 }
 
+impl std::fmt::Display for Key {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let result = match self {
+            Key::Char(c) => format!("{}",c),
+            _ => "Unknown".to_string(),
+        };
+        write!(f,"{}", result)
+    }
+}
+
 pub struct EventManager {
     event_reciever: std::sync::mpsc::Receiver<Event>,
+    //ui_event_sender: std::sync::mpsc::Sender<UIEvent>,
+    //ui_event_handle: std::thread::JoinHandle<()>,
     input_handle: std::thread::JoinHandle<()>,
     tick_handle: std::thread::JoinHandle<()>,
     ui_refresh_rate: std::time::Duration,
@@ -47,38 +67,47 @@ impl EventManager {
         let (tx, rx) = std::sync::mpsc::channel::<Event>();
         let input_tx = tx.clone();
         let tick_tx = tx.clone();
+        let tick_config = config.clone();
+        let result_config = config.clone();
+        //let (ui_tx, ui_rx) = std::sync::mpsc::channel::<UIEvent>();
 
         //Start threads to listen for events.
+        /*
+        let ui_event_handle = std::thread::spawn(move || {
+            //Handle ui events
+            loop {config.exit_key
+        });
+        */
         let input_handle = std::thread::spawn(move || {
             let exit_key = config.exit_key.clone();
             let stdin = std::io::stdin();
             if cfg!(unix) {
                 for event in stdin.keys() {
                     let key: Key = event.unwrap().into();
-                    let result = input_tx.send(Event::KeyPressed(key));
+                    let result = input_tx.send(Event::KeyPressed(key.clone()));
                     if result.is_err() || key == exit_key {
                         break;
                     }
                 }
             }
         });
-        let tick_handle = {
+        let tick_handle =
             std::thread::spawn(move || {
-                let config = &config.clone();
                 loop {
                     if tick_tx.send(Event::Tick).is_err() {
                         break;
                     }
-                    std::thread::sleep(config.ui_refresh_rate);
+                    std::thread::sleep(tick_config.ui_refresh_rate);
                 }
-            })
-        };
+            });
         Self {
             input_handle,
             tick_handle,
+            //ui_event_handle,
+            //ui_event_sender : ui_tx,
             event_reciever: rx,
-            ui_refresh_rate: config.ui_refresh_rate,
-            exit_key: config.exit_key,
+            ui_refresh_rate: result_config.ui_refresh_rate,
+            exit_key: result_config.exit_key,
         }
     }
     pub fn ui_refresh_rate(mut self, time: std::time::Duration) -> Self {

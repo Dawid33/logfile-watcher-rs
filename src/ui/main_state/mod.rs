@@ -1,5 +1,6 @@
 use super::Backend;
 use super::events;
+use super::serde::Config;
 
 mod terminal;
 use terminal::Terminal;
@@ -11,7 +12,7 @@ pub struct UIMainState {
 
 impl super::UIState for UIMainState
 {
-    fn draw(&self, frame: &mut tui::Frame<Backend>) {
+    fn draw(&self, frame: &mut tui::Frame<Backend>, _config: &Config) {
         let size = frame.size();
         frame.render_widget(self.terminal.view(), size);
     }
@@ -20,6 +21,7 @@ impl super::UIState for UIMainState
         &mut self,
         _terminal: &mut tui::Terminal<Backend>,
         event: &super::events::Event,
+        _config: &Config,
     ) -> Result<super::UpdateResult, Box<dyn std::error::Error>> {
         match event {
             events::Event::KeyPressed(key) => {
