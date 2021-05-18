@@ -3,8 +3,6 @@ pub use main_state::UIMainState;
 pub mod help_state;
 pub use help_state::UIHelpState;
 
-pub mod components;
-
 use super::events;
 use super::Backend;
 

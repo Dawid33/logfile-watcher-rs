@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = events::Config {
         exit_key: events::Key::Char('q'),
-        ui_refresh_rate: std::time::Duration::from_millis(200),
+        ui_refresh_rate: std::time::Duration::from_millis(50),
     };
     let event_manager = events::EventManager::new(config);
 

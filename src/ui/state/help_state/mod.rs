@@ -1,9 +1,11 @@
 use super::Backend;
-use super::components;
+use super::events;
+
+mod help_block;
 
 #[derive(Clone)]
 pub struct UIHelpState {
-    help_block : super::components::HelpBlock,
+    pub help_block : help_block::HelpBlock,
 }
 
 impl super::UIState for UIHelpState
@@ -16,8 +18,19 @@ impl super::UIState for UIHelpState
     fn update(
         &mut self,
         _terminal: &mut tui::Terminal<Backend>,
-        _event: &super::events::Event,
+        event: &super::events::Event,
     ) -> Result<super::UpdateResult, Box<dyn std::error::Error>> {
+        match event {
+            events::Event::KeyPressed(key) => {
+                match key {
+                    events::Key::Char('?') => {
+                        return Ok(super::UpdateResult::GoToPreviousUI);
+                    },
+                    _ => (),
+                }
+            },
+            _ => (),
+        }
         Ok(super::UpdateResult::DoNothing)
     }
 }
@@ -25,7 +38,7 @@ impl super::UIState for UIHelpState
 impl Default for UIHelpState {
     fn default() -> Self {
         Self {
-            help_block: components::HelpBlock::new().text(String::from("Help!")),
+            help_block: help_block::HelpBlock::new(),
         }
     }
 }
