@@ -1,18 +1,22 @@
-pub struct UIMainState
-{
-    terminal : super::Terminal,
+use super::Backend;
+
+#[derive(Clone)]
+pub struct UIMainState {
+    terminal: super::components::Terminal,
 }
 
-impl<B> super::UIState<B> for UIMainState 
-    where
-        B: tui::backend::Backend,
+impl super::UIState for UIMainState
 {
-    fn draw(&self, frame : &mut tui::Frame<B>){
+    fn draw(&self, frame: &mut tui::Frame<Backend>) {
         let size = frame.size();
         frame.render_widget(self.terminal.view(), size);
     }
 
-    fn update(&mut self, _terminal : &mut tui::Terminal<B>, _event : &super::events::Event) -> Result<super::UpdateResult<B>, Box<dyn std::error::Error>> {
+    fn update(
+        &mut self,
+        _terminal: &mut tui::Terminal<Backend>,
+        _event: &super::events::Event,
+    ) -> Result<super::UpdateResult, Box<dyn std::error::Error>> {
         Ok(super::UpdateResult::DoNothing)
     }
 }
@@ -20,7 +24,7 @@ impl<B> super::UIState<B> for UIMainState
 impl Default for UIMainState {
     fn default() -> Self {
         Self {
-            terminal : super::Terminal::new().text(String::from("hello world")),
+            terminal: super::Terminal::new().text(String::from("hello world")),
         }
     }
 }

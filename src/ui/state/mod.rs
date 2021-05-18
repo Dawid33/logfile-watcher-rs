@@ -1,29 +1,47 @@
 pub mod main_state;
 pub use main_state::UIMainState;
-pub mod terminal;
-pub use terminal::Terminal;
 pub mod help_state;
 pub use help_state::UIHelpState;
-use super::messages;
-use super::events;
 
-pub trait UIState<B>
-    where
-        B: tui::backend::Backend,
+pub mod components;
+
+use super::events;
+use super::Backend;
+
+pub trait UIState : CloneUIState
 {
     fn update(
         &mut self,
-        terminal_handle: &mut tui::Terminal<B>,
-        event_manager: &super::events::Event,
-    ) -> Result<UpdateResult<B>, Box<dyn std::error::Error>>;
+        terminal_handle: &mut tui::Terminal<Backend>,
+        event_manager: Box<dyn super::events::Event>,
+    ) -> Result<UpdateResult, Box<dyn std::error::Error>>;
 
-    fn draw(&self, frame: &mut tui::Frame<B>);
+    fn draw(&self, frame: &mut tui::Frame<Backend>);
 }
 
-pub enum UpdateResult<B>
-where 
-    B: tui::backend::Backend
+pub trait CloneUIState {
+    fn clone_foo<'a>(&self) -> Box<dyn UIState>;
+}
+
+impl<T> CloneUIState for T
+where
+    T: UIState + Clone + 'static,
 {
-    ReplaceUIWith(Box<dyn UIState<B>>),
+    fn clone_foo(&self) -> Box<dyn UIState> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn UIState> {
+    fn clone(&self) -> Self {
+        self.clone_foo()
+    }
+}
+
+
+pub enum UpdateResult
+{
+    ReplaceUIWith(Box<dyn UIState>),
+    GoToPreviousUI,
     DoNothing,
 }
