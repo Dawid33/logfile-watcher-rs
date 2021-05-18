@@ -1,6 +1,6 @@
 # logfile-watcher-rs
-
  [![Build Status](https://github.com/Dawid33/logfile-watcher-rs/workflows/CI/badge.svg)](https://github.com/Dawid33/logfile-watcher-rs/actions?query=workflow%3ACI)
+ [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 <img src="./assets/readme.gif" alt="Demo of logfile-watcher gif">
 
