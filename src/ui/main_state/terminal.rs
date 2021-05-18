@@ -4,12 +4,14 @@ use tui::widgets::*;
 #[derive(Clone)]
 pub struct Terminal {
     pub text: String,
+    is_selected: bool,
 }
 
 impl Terminal {
     pub fn new() -> Self {
         Self {
             text: String::from(""),
+            is_selected: false,
         }
     }
 
