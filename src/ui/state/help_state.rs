@@ -1,8 +1,9 @@
 use super::Backend;
+use super::components;
 
 #[derive(Clone)]
 pub struct UIHelpState {
-    help_block : super::components::HelpBlock;
+    help_block : super::components::HelpBlock,
 }
 
 impl super::UIState for UIHelpState
@@ -10,7 +11,6 @@ impl super::UIState for UIHelpState
     fn draw(&self, frame: &mut tui::Frame<Backend>) {
         let size = frame.size();
         frame.render_widget(self.help_block.view(), size);
-
     }
 
     fn update(
@@ -25,7 +25,7 @@ impl super::UIState for UIHelpState
 impl Default for UIHelpState {
     fn default() -> Self {
         Self {
-            terminal: super::Terminal::new().text(String::from("hello world")),
+            help_block: components::HelpBlock::new().text(String::from("Help!")),
         }
     }
 }

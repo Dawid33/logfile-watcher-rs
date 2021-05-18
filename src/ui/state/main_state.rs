@@ -1,4 +1,5 @@
 use super::Backend;
+use super::components;
 
 #[derive(Clone)]
 pub struct UIMainState {
@@ -24,7 +25,7 @@ impl super::UIState for UIMainState
 impl Default for UIMainState {
     fn default() -> Self {
         Self {
-            terminal: super::Terminal::new().text(String::from("hello world")),
+            terminal: components::Terminal::new().text(String::from("hello world")),
         }
     }
 }

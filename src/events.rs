@@ -21,10 +21,9 @@ pub struct Config {
     pub exit_key: Key,
 }
 
-pub trait Event {
-    fn into_box(self) -> Box<Self>
-    where
-        Self : Sized;
+pub enum Event {
+    KeyPressed(Key),
+    Tick,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -35,29 +34,8 @@ pub enum Key {
     NotImplemented,
 }
 
-#[derive(Default)]
-pub struct Tick {}
-
-impl Event for Key {
-    fn into_box(self) -> Box<Key> {
-        Box::new(self)
-    }
-}
-
-impl Event for Tick {
-    fn into_box(self) -> Box<Tick> {
-        Box::new(self)
-    }
-}
-
-impl Tick { 
-    fn new() -> Self {
-        Self {}
-    }
-}
-
 pub struct EventManager {
-    event_reciever: std::sync::mpsc::Receiver<Box<dyn Event>>,
+    event_reciever: std::sync::mpsc::Receiver<Event>,
     input_handle: std::thread::JoinHandle<()>,
     tick_handle: std::thread::JoinHandle<()>,
     ui_refresh_rate: std::time::Duration,
@@ -66,7 +44,7 @@ pub struct EventManager {
 
 impl EventManager {
     pub fn new(config: Config) -> Self {
-        let (tx, rx) = std::sync::mpsc::channel::<Box<dyn Event>>();
+        let (tx, rx) = std::sync::mpsc::channel::<Event>();
         let input_tx = tx.clone();
         let tick_tx = tx.clone();
 
@@ -77,7 +55,7 @@ impl EventManager {
             if cfg!(unix) {
                 for event in stdin.keys() {
                     let key: Key = event.unwrap().into();
-                    let result = input_tx.send(key.into_box());
+                    let result = input_tx.send(Event::KeyPressed(key));
                     if result.is_err() || key == exit_key {
                         break;
                     }
@@ -88,7 +66,7 @@ impl EventManager {
             std::thread::spawn(move || {
                 let config = &config.clone();
                 loop {
-                    if tick_tx.send(Tick::new().into_box()).is_err() {
+                    if tick_tx.send(Event::Tick).is_err() {
                         break;
                     }
                     std::thread::sleep(config.ui_refresh_rate);
@@ -107,7 +85,7 @@ impl EventManager {
         self.ui_refresh_rate = time;
         self
     }
-    pub fn next(&self) -> Result<Box<dyn Event>, std::sync::mpsc::RecvError> {
+    pub fn next(&self) -> Result<Event, std::sync::mpsc::RecvError> {
         self.event_reciever.recv()
     }
 }

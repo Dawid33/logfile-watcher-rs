@@ -13,7 +13,7 @@ pub trait UIState : CloneUIState
     fn update(
         &mut self,
         terminal_handle: &mut tui::Terminal<Backend>,
-        event_manager: Box<dyn super::events::Event>,
+        event_manager: &super::events::Event,
     ) -> Result<UpdateResult, Box<dyn std::error::Error>>;
 
     fn draw(&self, frame: &mut tui::Frame<Backend>);

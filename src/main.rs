@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         let event = event_manager.next()?;
-        match ui_state.update(&mut terminal, event)? {
+        match ui_state.update(&mut terminal, &event)? {
             ui::state::UpdateResult::GoToPreviousUI => {
                 let temp = previous_ui_state.clone();
                 previous_ui_state = temp;
