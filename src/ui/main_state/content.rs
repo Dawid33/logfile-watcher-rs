@@ -2,15 +2,15 @@ use tui::widgets::Block;
 use tui::widgets::*;
 
 #[derive(Clone)]
-pub struct Terminal {
+pub struct Content {
     pub text: String,
     is_selected: bool,
 }
 
-impl Terminal {
+impl Content {
     pub fn new() -> Self {
         Self {
-            text: String::from(""),
+            text: String::from("Hello World!"),
             is_selected: false,
         }
     }
@@ -21,7 +21,8 @@ impl Terminal {
     }
 
     pub fn view<'a>(&self) -> Paragraph<'a> {
-        let block = Block::default().borders(Borders::ALL);
+        let block = Block::default()
+            .borders(Borders::ALL);
         Paragraph::new(self.text.clone()).block(block)
     }
 }

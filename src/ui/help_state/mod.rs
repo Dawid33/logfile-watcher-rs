@@ -11,7 +11,7 @@ pub struct UIHelpState {
 
 impl super::UIState for UIHelpState
 {
-    fn draw(&self, frame: &mut tui::Frame<Backend>, config : &Config) {
+    fn draw(&mut self, frame: &mut tui::Frame<Backend>, config : &Config) {
         let size = frame.size();
         frame.render_widget(self.help_block.view(config), size);
     }

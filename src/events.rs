@@ -38,6 +38,7 @@ pub enum UIEvent {
 pub enum Key {
     Char(char),
     Alt(char),
+    Enter,
     Esc,
     NotImplemented,
 }

@@ -16,7 +16,7 @@ pub trait UIState : CloneUIState
         config: &serde::Config,
     ) -> Result<UpdateResult, Box<dyn std::error::Error>>;
 
-    fn draw(&self, frame: &mut tui::Frame<Backend>, config: &serde::Config);
+    fn draw(&mut self, frame: &mut tui::Frame<Backend>, config: &serde::Config);
 }
 
 pub trait CloneUIState {

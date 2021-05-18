@@ -13,6 +13,7 @@ type Backend = tui::backend::CrosstermBackend<std::io::Stdout>;
 pub mod events;
 pub mod ui;
 pub mod serde;
+pub mod load;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let stdout = std::io::stdout().into_raw_mode()?;
