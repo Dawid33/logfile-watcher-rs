@@ -72,9 +72,16 @@ impl super::UIState for UIMainState
                     }
                     events::Key::Char('j') => {
                         self.sidebar.items.next();
+                        let (url,_name) = &self.sidebar.items.items[self.sidebar.items.state.selected().unwrap()];
+                        super::load::load_url(&url).unwrap();
+                        let new_content = super::load::load_url(&url).unwrap();
+                        self.content.text = new_content;
                     }
                     events::Key::Char('k') => {
                         self.sidebar.items.previous();
+                        let (url,_name) = &self.sidebar.items.items[self.sidebar.items.state.selected().unwrap()];
+                        let new_content = super::load::load_url(&url).unwrap();
+                        self.content.text = new_content;
                     }
                     _ => (),
                 }
