@@ -1,6 +1,7 @@
 use super::events;
 use super::Backend;
 pub use super::serde;
+pub use super::load;
 
 pub mod main_state;
 pub use main_state::UIMainState;
@@ -16,7 +17,7 @@ pub trait UIState : CloneUIState
         config: &serde::Config,
     ) -> Result<UpdateResult, Box<dyn std::error::Error>>;
 
-    fn draw(&self, frame: &mut tui::Frame<Backend>, config: &serde::Config);
+    fn draw(&mut self, frame: &mut tui::Frame<Backend>, config: &serde::Config);
 }
 
 pub trait CloneUIState {
