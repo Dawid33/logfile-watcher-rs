@@ -1,9 +1,5 @@
-[package]
-name = "logfile-watcher-rs"
-version = "0.1.0"
-authors = ["Dawid33 <dawidso6467@gmail.com>"]
-edition = "2018"
 
+<<<<<<< HEAD
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -23,3 +19,5 @@ tui = { version = "0.15", default-features = false, features = ['crossterm', 'se
 [target.'cfg(unix)'.dependencies]
 tui = { version = "0.15", default-features = false, features = ['termion', 'serde'] }
 termion = { version = "1.5", default-features = false}
+=======
+>>>>>>> master
