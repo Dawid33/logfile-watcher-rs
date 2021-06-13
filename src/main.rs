@@ -1,8 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
-extern crate chrono;
-
 use {
     common::configs::*,
     log::*,
