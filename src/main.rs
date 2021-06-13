@@ -22,6 +22,7 @@ pub mod common;
 mod events;
 mod ui;
 mod update;
+mod buffer;
 
 pub const CONFIG_FILENAME: &str = "client_config.toml";
 
@@ -29,7 +30,7 @@ pub struct ProgramState<'a> {
     pub events : events::Events,
     pub ui_state : ui::UIState<'a>,
     pub client_config : common::configs::ClientConfig,
-    pub cache : ui::cache::UICache,
+    pub buffer : std::sync::Arc<buffer::Buffer>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -92,7 +93,11 @@ pub fn run_client<B : Backend>(
             (path.clone(), String::from(*items.last().unwrap()))
         })
         .collect();
-    
+        
+    let buffer = buffer::Buffer {
+        files : ui_state.sidebar_list.items.clone().into(),
+    };
+    let arc_buffer = std::sync::Arc::from(buffer);
     
     // Initialize event loop.
     let mut events = events::Events::with_config(events::Config {
@@ -101,14 +106,11 @@ pub fn run_client<B : Backend>(
     });
     events.enable_exit_key();
 
-    let buffer = Buffer {
-
-    };
     let mut program_state = ProgramState {
         events: events,
         ui_state: ui_state,
         client_config:client_config,
-        cache:cache,
+        buffer: arc_buffer,
     };
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;

@@ -19,16 +19,6 @@ pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn
         events::Event::Input(key) => {
             return handle_keyboard_input(key, program_state);
         }
-        events::Event::UpdateFile(_file_path, _content) => {
-            return Ok((true, true));
-        }
-        events::Event::AppendToFile(file_path, content) => {
-            let mut new_content : Vec<Spans> = content.iter().map(|s| {
-                Spans::from(Span::from(s.clone()))
-            }).collect();
-            program_state.ui_state.content.append(&mut new_content);
-            return Ok((true, true));
-        }
         events::Event::Tick => {
             return Ok((true, true));
         }
@@ -145,3 +135,16 @@ fn read_file(url: &url::Url) -> Result<Vec<String>, io::Error> {
         return Err(io::Error::from(io::ErrorKind::Other));
     }
 }
+
+/*
+events::Event::UpdateFile(_file_path, _content) => {
+    return Ok((true, true));
+}
+events::Event::AppendToFile(file_path, content) => {
+    let mut new_content : Vec<Spans> = content.iter().map(|s| {
+        Spans::from(Span::from(s.clone()))
+    }).collect();
+    program_state.ui_state.content.append(&mut new_content);
+    return Ok((true, true));
+}
+*/

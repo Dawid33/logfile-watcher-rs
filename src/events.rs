@@ -17,8 +17,6 @@ use termion::input::TermRead;
 pub enum Event<I> {
     Input(I),
     Tick,
-    UpdateFile(url::Url, Vec<String>),
-    AppendToFile(url::Url, Vec<String>),
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
