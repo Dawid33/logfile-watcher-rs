@@ -1,5 +1,5 @@
 use {
-    common::configs::*,
+    super::common::configs::*,
     std::{
         io,
         sync::{
@@ -17,14 +17,16 @@ use termion::input::TermRead;
 pub enum Event<I> {
     Input(I),
     Tick,
+    UpdateFile(url::Url, Vec<String>),
+    AppendToFile(url::Url, Vec<String>),
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
     rx: mpsc::Receiver<Event<Key>>,
-    input_handle: thread::JoinHandle<()>,
     ignore_exit_key: Arc<AtomicBool>,
+    input_handle: thread::JoinHandle<()>,
     tick_handle: thread::JoinHandle<()>,
 }
 

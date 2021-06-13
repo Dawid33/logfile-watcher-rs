@@ -16,7 +16,7 @@ use {
  *  "widgets" and passing them into a render function. The `ui_state` and `client_config`
  *  dictate how to create these widgets.
  */
-pub fn draw_client<B>(
+pub fn draw_ui<B>(
     terminal: &mut tui::Terminal<B>,
     program_state : &mut ProgramState
 ) -> Result<(), Box<dyn std::error::Error>>
@@ -79,25 +79,18 @@ where
             .borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
 
         //Main content pane + the content to put inside it.
-        let mut cnt : u16 = 0;
-
-        for s in ui_state.content.iter().rev() {
-            cnt += (s.width() as u16 / size.width) + 1;
-            //info!("s.width() : {}, size.width : {}, cnt : {},", s.width(),size.width,cnt);
-            if cnt > size.height {
-                break;
-            }
-        }
         let mut new = ui_state.content.clone();
-        if new.len() > 5 {
-            new = new.split_off(cnt as usize);
+        // Add 2 to new.len() so that tui doesnt acidentally remove the last couple of lines in the log file
+        // with the way it autosizes blocks
+        if new.len() + 2 > frame.size().height as usize{
+            new = new.split_off(new.len() + 2 - (frame.size().height as usize));
         }
 
         let content = Paragraph::new(new)
             .block(content_panel)
             .wrap(Wrap { trim: false });
 
-        //Main content pane layoutj
+        //Main content pane layout
         let content_panel_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(

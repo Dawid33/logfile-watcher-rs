@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 
 extern crate chrono;
-extern crate common;
 
 use {
     common::configs::*,
@@ -18,8 +17,9 @@ use tui::backend::CrosstermBackend;
 #[cfg(unix)]
 use {termion::raw::IntoRawMode, tui::backend::TermionBackend};
 
-mod events;
 pub mod networking;
+pub mod common;
+mod events;
 mod ui;
 mod update;
 
@@ -35,7 +35,7 @@ pub struct ProgramState<'a> {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
         if let Err(_e) = std::fs::File::open("latest.log") {
-            std::fs::File::create("lastest.log").unwrap();
+            std::fs::File::create("latest.log").unwrap();
         }
         simple_logging::log_to_file("latest.log", LevelFilter::Info).unwrap();
         info!("Running in debug mode.");
@@ -66,17 +66,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  * all of the users preferences. The only reason it is mutable is in case the
  * user wants to reload it.
  *
- * - terminal handle to the current terminal
+ * - `terminal` handle to the current terminal
  *
  * This function creates the neccesary structs to store program state. These structs
  * are passed into update_client() and draw_client().
  */
-pub fn run_client<B>(
+pub fn run_client<B : Backend>(
     client_config: common::configs::ClientConfig,
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>>
-where
-    B: Backend,
 {
     let mut ui_state = ui::UIState::default().load_from_client_config(&client_config);
 
@@ -103,7 +101,7 @@ where
     });
     events.enable_exit_key();
 
-    let cache = ui::cache::UICache {
+    let buffer = Buffer {
 
     };
     let mut program_state = ProgramState {
@@ -116,11 +114,11 @@ where
     terminal.clear()?;
 
     let result = loop {
-        match update::update_client(&mut program_state) {
+        match update::update(&mut program_state) {
             Ok((should_run, should_draw)) => {
                 if should_run {
                     if should_draw {
-                        if let Err(_e) = ui::draw::draw_client(terminal, &mut program_state)
+                        if let Err(_e) = ui::draw::draw_ui(terminal, &mut program_state)
                         {
                             break Ok(());
                         }
@@ -136,46 +134,3 @@ where
     terminal.clear()?;
     result
 }
-
-/*
-fn start_logger() {
-    // Create directory to store logs.
-    let directory : std::fs::ReadDir = std::fs::read_dir(LOGS_DIR_NAME).or_else::<std::fs::ReadDir,_>(|x| {
-        std::fs::create_dir(LOGS_DIR_NAME).expect(format!("Cannot create logs directory [{}] because {}", LOGS_DIR_NAME, x).as_str());
-        Ok(std::fs::read_dir(LOGS_DIR_NAME).expect(format!("Cannot read logs directory [{}]", LOGS_DIR_NAME).as_str()))
-    }).expect("Cannot read logs directory. How can this app create a dir and not be able to access it... if thats the problem");
-
-    //If there are too many logfiles, delete the oldest ones.
-    //This seems like a bad way of doing it, rewrite this at some point.
-    let mut dir_entries: Vec<Result<std::fs::DirEntry, std::io::Error>> = directory.collect();
-    if dir_entries.len() >= MAX_AMOUNT_OF_LOGS.into() {
-        &dir_entries.sort_by(|a, b| {
-            a.as_ref()
-                .unwrap()
-                .metadata()
-                .unwrap()
-                .created()
-                .unwrap()
-                .partial_cmp(&b.as_ref().unwrap().metadata().unwrap().created().unwrap())
-                .unwrap() // This is sooooooo nasty.
-        });
-        let mut old_len = dir_entries.len();
-        while old_len >= MAX_AMOUNT_OF_LOGS.into() {
-            std::fs::remove_file(dir_entries.first().unwrap().as_ref().unwrap().path()).unwrap();
-            dir_entries.remove(0).unwrap();
-            old_len -= 1;
-        }
-    }
-    // Create logging facility into stderr.
-    let logfile_name = if DEBUG_FILE_NAME_WITH_FULL_TIMESTAMP {
-        std::path::PathBuf::from(format!(
-            "{}/debug {}.log",
-            LOGS_DIR_NAME,
-            chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-        ))
-    } else {
-        std::path::PathBuf::from(format!("{}/debug.log", LOGS_DIR_NAME))
-    };
-    simple_logging::log_to_file(logfile_name, LevelFilter::Info).unwrap();
-}
-*/

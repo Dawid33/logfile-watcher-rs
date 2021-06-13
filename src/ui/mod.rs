@@ -7,7 +7,6 @@ use {
 
 pub mod draw;
 pub mod list;
-pub mod cache;
 
 pub struct UIState<'a> {
     pub current_content_panel_title: String,

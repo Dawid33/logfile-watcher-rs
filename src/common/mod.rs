@@ -6,7 +6,6 @@ use {
 };
 
 pub mod configs;
-pub mod json;
 
 /// Try loading in struct from json file. If json file does not exist, load in
 /// default values for the struct and create a new file with those values.

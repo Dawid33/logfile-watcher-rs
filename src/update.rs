@@ -1,4 +1,4 @@
-use {common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
+use {super::common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
 
 use super::{events, ui, ProgramState};
 
@@ -14,10 +14,20 @@ use super::{events, ui, ProgramState};
  *  or not to update the screen.
  * Update the `ui_state` based on input from `events`.
  */
-pub fn update_client(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
+pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
     match program_state.events.next()? {
         events::Event::Input(key) => {
             return handle_keyboard_input(key, program_state);
+        }
+        events::Event::UpdateFile(_file_path, _content) => {
+            return Ok((true, true));
+        }
+        events::Event::AppendToFile(file_path, content) => {
+            let mut new_content : Vec<Spans> = content.iter().map(|s| {
+                Spans::from(Span::from(s.clone()))
+            }).collect();
+            program_state.ui_state.content.append(&mut new_content);
+            return Ok((true, true));
         }
         events::Event::Tick => {
             return Ok((true, true));
@@ -26,7 +36,7 @@ pub fn update_client(program_state : &mut ProgramState) -> Result<(bool, bool), 
 }
 
 fn handle_keyboard_input(
-    key: common::configs::Key,
+    key: super::common::configs::Key,
     program_state : &mut ProgramState,
 ) -> Result<(bool, bool), Box<dyn std::error::Error>> {
     let client_config = &mut program_state.client_config;
