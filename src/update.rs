@@ -3,23 +3,19 @@ use {super::common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Sp
 use super::{events, ui, ProgramState};
 
 /**
- * ## update_client
- *
- *- ` events` is the event handler.
- *- `client_config` is mutable in case the user wants to reload
- *  the config file during runtime. \\
- *- `ui_state` records ui_state for the draw_client() function \\
- *- (bool,bool) The first bool in the output tells the caller function
- *  whether or not to exit the application. The second bool determines whether
- *  or not to update the screen.
- * Update the `ui_state` based on input from `events`.
  */
 pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
     match program_state.events.next()? {
         events::Event::Input(key) => {
             return handle_keyboard_input(key, program_state);
-        }
+        },
         events::Event::Tick => {
+            return Ok((true, true));
+        },
+        events::Event::FileReplaceEvent(url, lines) => {
+            return Ok((true, true));
+        },
+        events::Event::FileUpdateEvent(url,line_indexes, lines) => {
             return Ok((true, true));
         }
     }

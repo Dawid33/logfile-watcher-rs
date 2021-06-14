@@ -21,11 +21,12 @@ mod events;
 mod ui;
 mod update;
 mod buffer;
+mod files;
 
 pub const CONFIG_FILENAME: &str = "client_config.toml";
 
 pub struct ProgramState<'a> {
-    pub events : events::Events,
+    pub events : events::EventManager,
     pub ui_state : ui::UIState<'a>,
     pub client_config : common::configs::ClientConfig,
     pub buffer : std::sync::Arc<buffer::Buffer>,
@@ -98,7 +99,7 @@ pub fn run_client<B : Backend>(
     let arc_buffer = std::sync::Arc::from(buffer);
     
     // Initialize event loop.
-    let mut events = events::Events::with_config(events::Config {
+    let mut events = events::EventManager::with_config(events::Config {
         exit_key: client_config.key_map.quit,
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
@@ -110,6 +111,8 @@ pub fn run_client<B : Backend>(
         client_config:client_config,
         buffer: arc_buffer,
     };
+
+
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
 

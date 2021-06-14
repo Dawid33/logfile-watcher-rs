@@ -11,17 +11,22 @@ use {
     },
 };
 
+use std::str::FromStr;
+
 #[cfg(unix)]
 use termion::input::TermRead;
+use url::Url;
 
 pub enum Event<I> {
     Input(I),
     Tick,
+    FileUpdateEvent(url::Url, Vec<i32>, Vec<String>),
+    FileReplaceEvent(url::Url, Vec<String>),
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
-pub struct Events {
+pub struct EventManager {
     rx: mpsc::Receiver<Event<Key>>,
     ignore_exit_key: Arc<AtomicBool>,
     input_handle: thread::JoinHandle<()>,
@@ -43,13 +48,13 @@ impl Default for Config {
     }
 }
 
-impl Events {
+impl EventManager {
     #[allow(dead_code)]
-    pub fn new() -> Events {
-        Events::with_config(Config::default())
+    pub fn new() -> EventManager {
+        EventManager::with_config(Config::default())
     }
 
-    pub fn with_config(config: Config) -> Events {
+    pub fn with_config(config: Config) -> EventManager {
         let (tx, rx) = mpsc::channel::<Event<Key>>();
         let ignore_exit_key = Arc::new(AtomicBool::new(false));
         let input_handle = {
@@ -72,6 +77,7 @@ impl Events {
             })
         };
         let tick_handle = {
+            let tx = tx.clone();
             thread::spawn(move || loop {
                 if tx.send(Event::Tick).is_err() {
                     break;
@@ -79,7 +85,7 @@ impl Events {
                 thread::sleep(config.tick_rate);
             })
         };
-        Events {
+        EventManager {
             rx,
             ignore_exit_key,
             input_handle,
