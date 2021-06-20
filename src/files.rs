@@ -39,17 +39,18 @@ impl FileMonitor{
                 
                 info!("UPDATE LOGFILE EVERY 1000ms");
                 std::thread::sleep(std::time::Duration::from_millis(1000));
-                let mut owned_file_list = file_list.lock().unwrap();
-                let mut file = owned_file_list.get(0).unwrap().clone();
-
-                match load_url(&file.file_sig.url) {
-                    Ok(output) => {
-                        file.contents = output;
-                        event_sender_handler.send(Event::FileUpdate(file)).unwrap();
+                let owned_file_list = file_list.lock().unwrap();
+                for file in owned_file_list.iter(){
+                    match load_url(&file.file_sig.url) {
+                        Ok(output) => {
+                            let mut file = file.clone();
+                            file.contents = output;
+                            event_sender_handler.send(Event::FileUpdate(file)).unwrap();
+                        }
+                        Err(e) => panic!("Cannot open url {}. {}", file.file_sig.url.as_str(), e),
                     }
-                    Err(e) => panic!("Cannot open url {}. {}", file.file_sig.url.as_str(), e),
                 }
-
+                
                 drop(owned_file_list);
             })
         };
