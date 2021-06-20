@@ -1,22 +1,31 @@
 use {super::common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
 
+use crate::buffer;
+
 use super::{events, ui, ProgramState};
 
-/**
- */
 pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
     match program_state.events.next()? {
         events::Event::Input(key) => {
             return handle_keyboard_input(key, program_state);
         },
         events::Event::Tick => {
+            program_state.events.file_monitor.update_file_list(&program_state.buffer.lock().unwrap());
             return Ok((true, true));
         },
-        events::Event::FileReplaceEvent(url, lines) => {
+        events::Event::FileUpdate(file) => {
+            let mut buffer = program_state.buffer.lock().unwrap();
+            for buffer_file in buffer.get_file_list() {
+                if buffer_file.file_sig.url == file.file_sig.url {
+                    buffer.set_file(file);
+                    break;
+                }
+            }
+            update_ui_state_from_buffer(&buffer, &mut program_state.ui_state);
             return Ok((true, true));
         },
-        events::Event::FileUpdateEvent(url,line_indexes, lines) => {
-            return Ok((true, true));
+        _ => {
+            return Ok((true,true));
         }
     }
 }
@@ -49,7 +58,7 @@ fn handle_keyboard_input(
     if key == client_config.key_map.reload_config {
         //let config = common::load_struct_toml::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
         //*client_config = config;
-        info!("pressed a key");
+        info!("Pressed reload config key");
     }
     if key == client_config.key_map.up || key == client_config.key_map.down {
         if key == client_config.key_map.up {
@@ -60,87 +69,36 @@ fn handle_keyboard_input(
             ui_state.sidebar_list.previous();
         }
 
-        // Index of currently selected item.
-        let index = ui_state.sidebar_list.state.selected().unwrap();
-        // Url of the currently selected list item.
-        let url = ui_state.sidebar_list.items[index].0.clone();
-        // Set the name of the file as the title.
-        ui_state.current_content_panel_title = String::from(url.path());
-
-        match load_url(&url) {
-            Ok(output) => {
-                let mut new_output: Vec<Spans> = Vec::new();
-                for s in output {
-                    new_output.push(Spans::from(Span::from(s)));
-                }
-                ui_state.content.clear();
-                ui_state.content = new_output.clone();
-                trace!(
-                    "File [{}] successfully added to ui_state.content.",
-                    url.as_str()
-                );
-            }
-            Err(e) => error!("Cannot open url {}. {}", url.as_str(), e),
-        }
+        update_ui_state_from_buffer(&program_state.buffer.lock().unwrap(), &mut program_state.ui_state);
     }
-    Ok((true, false))
+    Ok((true, true))
 }
 
-fn load_url(url: &url::Url) -> Result<Vec<String>, io::Error> {
-    match url.scheme() {
-        "file" => match read_file(url) {
-            Ok(content) => Ok(content),
-            Err(e) => {
-                error!("Cannot read file path {}", url.as_str());
-                Err(e)
-            }
-        },
-        _ => {
-            error!(
-                "Unknown url scheme {} in url {}",
-                url.scheme(),
-                url.as_str()
-            );
-            Err(io::Error::from(io::ErrorKind::Other))
-        }
-    }
-}
-
-fn read_file(url: &url::Url) -> Result<Vec<String>, io::Error> {
-    if let Ok(file_path) = url.to_file_path() {
-        if let Ok(file_handle) = std::fs::File::open(file_path) {
-            let mut buf_reader = std::io::BufReader::new(file_handle);
-            let mut buffer = String::new();
-            let mut output: Vec<String> = Vec::new();
-            trace!("Reading file [{}]", url.as_str());
-            while let Ok(x) = buf_reader.read_line(&mut buffer) {
-                if x == 0 {
-                    break;
-                } else {
-                    output.push(buffer.clone());
-                    buffer.clear();
-                }
-            }
-            Ok(output)
-        } else {
-            error!("Cannot open file using the url {}", url.as_str());
-            return Err(io::Error::from(io::ErrorKind::Other));
-        }
+fn update_ui_state_from_buffer(buffer : &buffer::Buffer, ui_state : &mut ui::UIState) {
+    // Index of currently selected item.
+    let index = ui_state.sidebar_list.state.selected();
+    let index = if index.is_none() {
+        return;
     } else {
-        error!("Cannot turn the url [{}] to a file path.", url.as_str());
-        return Err(io::Error::from(io::ErrorKind::Other));
+        index.unwrap()
+    };
+    // Set the name of the file as the title.
+    ui_state.current_content_panel_title = ui_state.sidebar_list.items[index].file_sig.display_name.clone();
+    let url = ui_state.sidebar_list.items[index].file_sig.url.clone();
+    let mut file_exists_in_buffer : bool = false;
+    for file in buffer.get_file_list() {
+        if file.file_sig.url == url {
+            file_exists_in_buffer = true;
+            let mut new = Vec::new();
+            for s in &file.contents {
+                new.push(Spans::from(Span::from(s.clone())));
+            }
+            ui_state.current_content = new;
+            ui_state.current_content_panel_title = file.file_sig.display_name.clone();
+        }
+    }
+    if !file_exists_in_buffer {
+        error!("File does not exist in buffer when it should.");
     }
 }
 
-/*
-events::Event::UpdateFile(_file_path, _content) => {
-    return Ok((true, true));
-}
-events::Event::AppendToFile(file_path, content) => {
-    let mut new_content : Vec<Spans> = content.iter().map(|s| {
-        Spans::from(Span::from(s.clone()))
-    }).collect();
-    program_state.ui_state.content.append(&mut new_content);
-    return Ok((true, true));
-}
-*/

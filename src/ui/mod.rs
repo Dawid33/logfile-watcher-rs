@@ -1,3 +1,5 @@
+use crate::files::{File, FileSignature};
+
 use {
     super::*,
     common::configs::*,
@@ -8,6 +10,10 @@ use {
 pub mod draw;
 pub mod list;
 
+pub enum UIEvent {
+    FileAddedToBuffer
+}
+
 pub struct UIState<'a> {
     pub current_content_panel_title: String,
     pub percent_size_of_panes: (u16, u16),
@@ -16,8 +22,8 @@ pub struct UIState<'a> {
     pub debug: String,
     pub current_mode: UIMode,
     pub previous_mode: UIMode,
-    pub sidebar_list: list::StatefulList<(url::Url, String)>,
-    pub content: Vec<Spans<'a>>,
+    pub sidebar_list: list::StatefulList<File>,
+    pub current_content: Vec<Spans<'a>>,
 }
 
 #[derive(Copy, Clone)]
@@ -42,7 +48,7 @@ impl Default for UIState<'_> {
             current_mode: UIMode::Main,
             previous_mode: UIMode::Main,
             sidebar_list: list::StatefulList::new(),
-            content: Vec::new(),
+            current_content: Vec::new(),
         }
     }
 }

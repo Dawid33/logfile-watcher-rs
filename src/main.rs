@@ -10,6 +10,7 @@ use {
     std::sync,
 };
 
+use files::FileSignature;
 #[cfg(windows)]
 use tui::backend::CrosstermBackend;
 #[cfg(unix)]
@@ -29,7 +30,7 @@ pub struct ProgramState<'a> {
     pub events : events::EventManager,
     pub ui_state : ui::UIState<'a>,
     pub client_config : common::configs::ClientConfig,
-    pub buffer : std::sync::Arc<buffer::Buffer>,
+    pub buffer : std::sync::Arc<std::sync::Mutex<buffer::Buffer>>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -89,21 +90,26 @@ pub fn run_client<B : Backend>(
                 .ok_or_else(|| "cannot be base")
                 .unwrap();
             let items: Vec<&str> = items.collect();
-            (path.clone(), String::from(*items.last().unwrap()))
+            info!("{}", String::from(*items.last().unwrap()));
+
+            files::File {
+                file_sig : FileSignature{
+                    url : path.clone(),
+                    display_name : String::from(*items.last().unwrap()),
+                },
+                contents : vec!["".to_string()],
+            }
         })
         .collect();
-        
-    let buffer = buffer::Buffer {
-        files : ui_state.sidebar_list.items.clone().into(),
-    };
-    let arc_buffer = std::sync::Arc::from(buffer);
+    
+    let buffer = buffer::Buffer::new(ui_state.sidebar_list.items.clone());
+    let arc_buffer = std::sync::Arc::new(std::sync::Mutex::from(buffer));
     
     // Initialize event loop.
-    let mut events = events::EventManager::with_config(events::Config {
+    let events = events::EventManager::with_config(events::Config {
         exit_key: client_config.key_map.quit,
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
-    events.enable_exit_key();
 
     let mut program_state = ProgramState {
         events: events,
@@ -111,7 +117,6 @@ pub fn run_client<B : Backend>(
         client_config:client_config,
         buffer: arc_buffer,
     };
-
 
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;

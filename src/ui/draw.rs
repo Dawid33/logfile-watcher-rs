@@ -42,12 +42,13 @@ where
 
         let size = frame.size();
         //Create a vec of ListItems (text objects) from the current ui_state.
+        
         let items: Vec<ListItem> = ui_state
             .sidebar_list
             .items
             .iter()
             .map(|i| {
-                let line = Spans::from(Span::styled(i.1.clone(), Style::default()));
+                let line = Spans::from(Span::styled(i.file_sig.display_name.clone(), Style::default()));
                 ListItem::new(line).style(Style::default())
             })
             .collect();
@@ -79,8 +80,8 @@ where
             .borders(Borders::RIGHT | Borders::BOTTOM | Borders::TOP);
 
         //Main content pane + the content to put inside it.
-        let mut new = ui_state.content.clone();
-        // Add 2 to new.len() so that tui doesnt acidentally remove the last couple of lines in the log file
+        let mut new = ui_state.current_content.clone();
+        // Add 2 to new.len() so that tui doesnt acidentally remove the last couple of lines in the file
         // with the way it autosizes blocks
         if new.len() + 2 > frame.size().height as usize{
             new = new.split_off(new.len() + 2 - (frame.size().height as usize));

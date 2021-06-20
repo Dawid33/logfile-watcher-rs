@@ -97,7 +97,6 @@ impl From<termion::event::Key> for Key {
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
     pub refersh_rate_miliseconds: u64,
-    pub url: Url,
     pub use_tui: bool,
     pub key_map: ShortcutKeyMap,
     pub ui_config: ClientUIConfig,
@@ -155,7 +154,6 @@ impl Default for ShortcutKeyMap {
 impl Default for ClientConfig {
     fn default() -> Self {
         Self {
-            url: Url::parse("ws://localhost:9001/socket").unwrap(),
             refersh_rate_miliseconds: 50,
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
