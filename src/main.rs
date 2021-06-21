@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+#![recursion_limit = "16"]
 
 use {
     common::configs::*,
