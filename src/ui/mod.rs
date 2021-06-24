@@ -1,4 +1,4 @@
-use crate::files::{File, FileSignature};
+use crate::files::{File};
 
 use {
     super::*,
@@ -32,9 +32,11 @@ pub enum UIMode {
     Help,
 }
 impl UIState<'_> {
-    pub fn load_from_client_config(mut self, config: &ClientConfig) -> Self {
-        self.background_color = draw::rgb_tuple_to_color(&config.ui_config.background_color);
-        self
+    pub fn new(ui_config : &ClientUIConfig) -> Self {
+        let mut new = UIState::default();
+        new.background_color = draw::rgb_tuple_to_color(&ui_config.background_color);
+        new.sidebar_list.items = ui_config.default_files.clone();
+        new
     }
 }
 impl Default for UIState<'_> {

@@ -6,6 +6,7 @@ use url::Url;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::io::BufRead;
+use serde::{Serialize, Deserialize};
 
 pub struct FileMonitor{
     should_exit : Arc<sync::atomic::AtomicBool>,
@@ -13,23 +14,20 @@ pub struct FileMonitor{
     file_list : Arc<Mutex<super::buffer::FileList>>,
     buffer_update_counter : u64,
 }
-#[derive(Clone,Debug)]
+#[derive(Clone,Debug,Serialize,Deserialize)]
 pub struct File {
-    pub file_sig : FileSignature,
-    pub contents : Vec<String>,
-}
-#[derive(Clone,Debug)]
-pub struct FileSignature {
     pub url : url::Url,
     pub display_name : String,
+    pub contents : Vec<String>,
 }
 
 impl FileMonitor{
     pub fn new(event_sender_handler : std::sync::mpsc::Sender<Event>) -> Self {
         let should_exit = sync::Arc::from(sync::atomic::AtomicBool::new(false));
-        let mut file_list = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+        let file_list = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+        
         let file_watcher_handle = {
-            let mut file_list : Arc<Mutex<super::buffer::FileList>> = file_list.clone();
+            let file_list : Arc<Mutex<super::buffer::FileList>> = file_list.clone();
             let should_exit = should_exit.clone();
             std::thread::spawn(move || loop {
                 if should_exit.load(sync::atomic::Ordering::Relaxed) {
@@ -37,21 +35,19 @@ impl FileMonitor{
                     break;
                 }
                 
-                info!("UPDATE LOGFILE EVERY 1000ms");
-                std::thread::sleep(std::time::Duration::from_millis(1000));
                 let owned_file_list = file_list.lock().unwrap();
                 for file in owned_file_list.iter(){
-                    match load_url(&file.file_sig.url) {
+                    match load_url(&file.url) {
                         Ok(output) => {
                             let mut file = file.clone();
                             file.contents = output;
                             event_sender_handler.send(Event::FileUpdate(file)).unwrap();
-                        }
-                        Err(e) => panic!("Cannot open url {}. {}", file.file_sig.url.as_str(), e),
+                        },
+                        Err(e) => panic!("Cannot open url {}. {}", file.url.as_str(), e),
                     }
                 }
-                
                 drop(owned_file_list);
+                std::thread::sleep(std::time::Duration::from_millis(100));
             })
         };
 

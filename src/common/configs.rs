@@ -120,17 +120,25 @@ pub struct ShortcutKeyMap {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ClientUIConfig {
     pub background_color: (u8, u8, u8),
-    pub default_urls: Vec<Url>,
+    pub default_files: Vec<crate::files::File>,
 }
 
 impl Default for ClientUIConfig {
     fn default() -> Self {
         Self {
             background_color: (0, 0, 0),
-            default_urls: vec![Url::from_file_path(
-                std::env::current_dir().unwrap().join("latest.log"),
-            )
-            .unwrap()],
+            default_files: vec![
+                crate::files::File {
+                    url : Url::from_file_path(std::env::current_dir().unwrap().join("latest.log")).unwrap(),
+                    display_name : "latest.log".to_string(),
+                    contents : vec!["Did not read log yet...".to_string()],
+                },
+                crate::files::File {
+                    url : Url::from_file_path(std::env::current_dir().unwrap().join("assets/testing1.txt")).unwrap(),
+                    display_name : "testing1.txt".to_string(),
+                    contents : vec!["Did not read log yet...".to_string()],
+                }
+            ],
         }
     }
 }

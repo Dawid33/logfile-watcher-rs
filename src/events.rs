@@ -23,6 +23,7 @@ pub enum Event {
     Input(Key),
     Tick,
     FileUpdate(File),
+    Quit,
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
@@ -55,9 +56,10 @@ impl EventManager{
     pub fn new() -> EventManager {
         EventManager::with_config(Config::default())
     }
-
+    
     pub fn with_config(config: Config) -> EventManager {
         let (tx, rx) = mpsc::channel::<Event>();
+        let file_monitor = super::files::FileMonitor::new(tx.clone());
         let input_handle = {
             let tx = tx.clone();
             
@@ -86,7 +88,6 @@ impl EventManager{
                 thread::sleep(config.tick_rate);
             })
         };
-        let file_monitor = super::files::FileMonitor::new(tx.clone());
         EventManager {
             tx,
             rx,
@@ -103,6 +104,7 @@ impl EventManager{
 
 impl<'a> Drop for EventManager {
     fn drop(&mut self) {
+        self.tx.send(Event::Quit).unwrap();
         self.file_monitor.exit();
     }
 }

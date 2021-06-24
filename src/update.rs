@@ -16,7 +16,7 @@ pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn
         events::Event::FileUpdate(file) => {
             let mut buffer = program_state.buffer.lock().unwrap();
             for buffer_file in buffer.get_file_list() {
-                if buffer_file.file_sig.url == file.file_sig.url {
+                if buffer_file.url == file.url {
                     buffer.set_file(file);
                     break;
                 }
@@ -83,18 +83,20 @@ fn update_ui_state_from_buffer(buffer : &buffer::Buffer, ui_state : &mut ui::UIS
         index.unwrap()
     };
     // Set the name of the file as the title.
-    ui_state.current_content_panel_title = ui_state.sidebar_list.items[index].file_sig.display_name.clone();
-    let url = ui_state.sidebar_list.items[index].file_sig.url.clone();
+    ui_state.current_content_panel_title = ui_state.sidebar_list.items[index].display_name.clone();
+    
+    //If the newly selected item exists in the buffer, copy it into the ui_state struct.
+    let url = ui_state.sidebar_list.items[index].url.clone();
     let mut file_exists_in_buffer : bool = false;
     for file in buffer.get_file_list() {
-        if file.file_sig.url == url {
+        if file.url == url {
             file_exists_in_buffer = true;
             let mut new = Vec::new();
             for s in &file.contents {
                 new.push(Spans::from(Span::from(s.clone())));
             }
             ui_state.current_content = new;
-            ui_state.current_content_panel_title = file.file_sig.display_name.clone();
+            ui_state.current_content_panel_title = file.display_name.clone();
         }
     }
     if !file_exists_in_buffer {

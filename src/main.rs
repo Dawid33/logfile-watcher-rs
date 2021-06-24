@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-#![recursion_limit = "16"]
+#![recursion_limit = "24"]
 
 use {
     common::configs::*,
@@ -8,10 +8,13 @@ use {
     std::{io, path::Path, time::Duration},
     tui::{backend::Backend, Terminal},
     tui::text::Spans,
-    std::sync,
+    std::sync::{
+        self,
+        Arc,
+        Mutex,
+    },
 };
 
-use files::FileSignature;
 #[cfg(windows)]
 use tui::backend::CrosstermBackend;
 #[cfg(unix)]
@@ -78,33 +81,12 @@ pub fn run_client<B : Backend>(
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>>
 {
-    let mut ui_state = ui::UIState::default().load_from_client_config(&client_config);
-
-    // Get the default sidebar items from the configuration file.
-    ui_state.sidebar_list.items = client_config
-        .ui_config
-        .default_urls
-        .iter()
-        .map(|path| {
-            let items = path
-                .path_segments()
-                .ok_or_else(|| "cannot be base")
-                .unwrap();
-            let items: Vec<&str> = items.collect();
-            info!("{}", String::from(*items.last().unwrap()));
-
-            files::File {
-                file_sig : FileSignature{
-                    url : path.clone(),
-                    display_name : String::from(*items.last().unwrap()),
-                },
-                contents : vec!["".to_string()],
-            }
-        })
-        .collect();
+    //UI state that dictates what ui to draw and how to draw it.
+    let mut ui_state = ui::UIState::new(&client_config.ui_config);
     
+    //Buffer that holds currently tracked files.
     let buffer = buffer::Buffer::new(ui_state.sidebar_list.items.clone());
-    let arc_buffer = std::sync::Arc::new(std::sync::Mutex::from(buffer));
+    let buffer = Arc::new(Mutex::from(buffer));
     
     // Initialize event loop.
     let events = events::EventManager::with_config(events::Config {
@@ -112,11 +94,12 @@ pub fn run_client<B : Backend>(
         tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
     });
 
+    //Bringing it all together
     let mut program_state = ProgramState {
         events: events,
         ui_state: ui_state,
         client_config:client_config,
-        buffer: arc_buffer,
+        buffer: buffer,
     };
 
     //Clear the terminal to ensure a blank slate.
@@ -127,7 +110,7 @@ pub fn run_client<B : Backend>(
             Ok((should_run, should_draw)) => {
                 if should_run {
                     if should_draw {
-                        if let Err(_e) = ui::draw::draw_ui(terminal, &mut program_state)
+                        if let Err(_e) = ui::draw::draw_ui(terminal, &mut program_state.ui_state)
                         {
                             break Ok(());
                         }

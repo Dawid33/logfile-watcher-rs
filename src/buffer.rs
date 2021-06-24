@@ -1,6 +1,6 @@
 use tui::text::Spans;
 
-use crate::files::{File, FileSignature};
+use crate::files::{File};
 
 pub type FileList = Vec<File>;
 pub struct Buffer {
@@ -20,7 +20,7 @@ impl Buffer{
     }
     pub fn set_file(&mut self, new_file: File) {
         for file in &mut self.file_list {
-            if file.file_sig.url == new_file.file_sig.url {
+            if file.url == new_file.url {
                 *file = new_file.clone();
                 break;
             }
