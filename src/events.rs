@@ -1,23 +1,12 @@
-use {
-    std::{
-        io,
-        sync::{
-            atomic::{AtomicBool, Ordering},
-            mpsc, Arc,
-        },
-        thread,
-        time::Duration,
-    },
-};
+use std::{io,thread,time::Duration};
+use std::sync::{atomic::{AtomicBool, Ordering},mpsc, Arc};
 use crate::configs;
-
+use crate::files::File;
 use std::str::FromStr;
+use url::Url;
 
 #[cfg(unix)]
 use termion::input::TermRead;
-use url::Url;
-
-use crate::files::File;
 
 pub enum Event {
     Input(configs::Key),
