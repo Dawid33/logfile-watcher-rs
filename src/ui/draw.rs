@@ -1,6 +1,6 @@
 use {
     super::*,
-    common::configs::*,
+    crate::configs::*,
     tui::{
         backend::Backend,
         layout::{Constraint, Direction, Layout},
@@ -18,7 +18,7 @@ use {
  */
 pub fn draw_ui<B>(
     terminal: &mut tui::Terminal<B>,
-    ui_state : &mut UIState
+    ui_state: &mut UIState,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
@@ -32,7 +32,7 @@ where
 
 pub fn draw_main<B>(
     terminal: &mut tui::Terminal<B>,
-    ui_state : &mut UIState
+    ui_state: &mut UIState,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
@@ -40,7 +40,7 @@ where
     terminal.draw(|frame| {
         let size = frame.size();
         //Create a vec of ListItems (text objects) from the current ui_state.
-        
+
         let items: Vec<ListItem> = ui_state
             .sidebar_list
             .items
@@ -81,7 +81,7 @@ where
         let mut new = ui_state.current_content.clone();
         // Add 2 to new.len() so that tui doesnt acidentally remove the last couple of lines in the file
         // with the way it autosizes blocks
-        if new.len() + 2 > frame.size().height as usize{
+        if new.len() + 2 > frame.size().height as usize {
             new = new.split_off(new.len() + 2 - (frame.size().height as usize));
         }
 
@@ -110,7 +110,7 @@ where
 /// Draw the help menu.
 pub fn draw_help<B>(
     terminal: &mut tui::Terminal<B>,
-    ui_state : &mut UIState
+    ui_state: &mut UIState,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,

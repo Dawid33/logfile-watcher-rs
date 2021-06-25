@@ -1,48 +1,48 @@
-use std::sync;
 use super::events::Event;
 use log::*;
-use tui::text::Spans;
-use url::Url;
+use serde::{Deserialize, Serialize};
+use std::io::BufRead;
+use std::sync;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::io::BufRead;
-use serde::{Serialize, Deserialize};
+use tui::text::Spans;
+use url::Url;
 
-pub struct FileMonitor{
-    should_exit : Arc<sync::atomic::AtomicBool>,
-    thread_handle : std::thread::JoinHandle<()>,
-    file_list : Arc<Mutex<super::buffer::FileList>>,
-    buffer_update_counter : u64,
+pub struct FileMonitor {
+    should_exit: Arc<sync::atomic::AtomicBool>,
+    thread_handle: std::thread::JoinHandle<()>,
+    file_list: Arc<Mutex<super::buffer::FileList>>,
+    buffer_update_counter: u64,
 }
-#[derive(Clone,Debug,Serialize,Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct File {
-    pub url : url::Url,
-    pub display_name : String,
-    pub contents : Vec<String>,
+    pub url: url::Url,
+    pub display_name: String,
+    pub contents: Vec<String>,
 }
 
-impl FileMonitor{
-    pub fn new(event_sender_handler : std::sync::mpsc::Sender<Event>) -> Self {
+impl FileMonitor {
+    pub fn new(event_sender_handler: std::sync::mpsc::Sender<Event>) -> Self {
         let should_exit = sync::Arc::from(sync::atomic::AtomicBool::new(false));
         let file_list = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
-        
+
         let file_watcher_handle = {
-            let file_list : Arc<Mutex<super::buffer::FileList>> = file_list.clone();
+            let file_list: Arc<Mutex<super::buffer::FileList>> = file_list.clone();
             let should_exit = should_exit.clone();
             std::thread::spawn(move || loop {
                 if should_exit.load(sync::atomic::Ordering::Relaxed) {
-                    warn!("Exiting sender");    
+                    warn!("Exiting sender");
                     break;
                 }
-                
+
                 let owned_file_list = file_list.lock().unwrap();
-                for file in owned_file_list.iter(){
+                for file in owned_file_list.iter() {
                     match load_url(&file.url) {
                         Ok(output) => {
                             let mut file = file.clone();
                             file.contents = output;
                             event_sender_handler.send(Event::FileUpdate(file)).unwrap();
-                        },
+                        }
                         Err(e) => panic!("Cannot open url {}. {}", file.url.as_str(), e),
                     }
                 }
@@ -52,13 +52,13 @@ impl FileMonitor{
         };
 
         FileMonitor {
-            thread_handle : file_watcher_handle,
+            thread_handle: file_watcher_handle,
             should_exit,
             file_list,
-            buffer_update_counter : 0,
+            buffer_update_counter: 0,
         }
     }
-    pub fn update_file_list(&mut self, buffer : &super::buffer::Buffer){
+    pub fn update_file_list(&mut self, buffer: &super::buffer::Buffer) {
         //If the buffer has been updated, then update the file list.
         if buffer.update_counter > self.buffer_update_counter {
             *self.file_list.lock().unwrap() = (*buffer.get_file_list()).clone();

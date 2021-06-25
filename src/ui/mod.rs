@@ -1,8 +1,8 @@
-use crate::files::{File};
+use crate::files::File;
 
 use {
     super::*,
-    common::configs::*,
+    crate::configs::*,
     std::path::PathBuf,
     tui::{style::Color, text::Spans},
 };
@@ -11,7 +11,7 @@ pub mod draw;
 pub mod list;
 
 pub enum UIEvent {
-    FileAddedToBuffer
+    FileAddedToBuffer,
 }
 
 pub struct UIState<'a> {
@@ -32,7 +32,7 @@ pub enum UIMode {
     Help,
 }
 impl UIState<'_> {
-    pub fn new(ui_config : &ClientUIConfig) -> Self {
+    pub fn new(ui_config: &configs::ClientUIConfig) -> Self {
         let mut new = UIState::default();
         new.background_color = draw::rgb_tuple_to_color(&ui_config.background_color);
         new.sidebar_list.items = ui_config.default_files.clone();

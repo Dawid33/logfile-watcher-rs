@@ -1,44 +1,52 @@
-use {super::common::configs::*, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
+use std::sync::{self, Arc, Mutex};
+use termion::event;
+use {
+    crate::configs, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans,
+};
 
-use crate::buffer;
+use crate::{UpdateResult, buffer::{self, Buffer}, ui::UIState};
 
-use super::{events, ui, ProgramState};
+use super::{events, ui};
 
-pub fn update(program_state : &mut ProgramState) -> Result<(bool, bool), Box<dyn std::error::Error>> {
-    match program_state.events.next()? {
+pub fn update(
+    ui_state: &mut UIState,
+    events: &mut events::EventManager,
+    config: &configs::ClientConfig,
+    buffer: Arc<Mutex<Buffer>>,
+) -> Result<UpdateResult, Box<dyn std::error::Error>> {
+    let mut buffer = buffer.lock().unwrap();
+    match events.next()? {
         events::Event::Input(key) => {
-            return handle_keyboard_input(key, program_state);
-        },
+            return handle_keyboard_input(key, ui_state, config, &mut buffer);
+        }
         events::Event::Tick => {
-            program_state.events.file_monitor.update_file_list(&program_state.buffer.lock().unwrap());
-            return Ok((true, true));
-        },
+            events.file_monitor.update_file_list(&buffer);
+            return Ok(UpdateResult::None);
+        }
         events::Event::FileUpdate(file) => {
-            let mut buffer = program_state.buffer.lock().unwrap();
             for buffer_file in buffer.get_file_list() {
                 if buffer_file.url == file.url {
                     buffer.set_file(file);
                     break;
                 }
             }
-            update_ui_state_from_buffer(&buffer, &mut program_state.ui_state);
-            return Ok((true, true));
-        },
+            update_ui_state_from_buffer(&buffer, ui_state);
+            return Ok(UpdateResult::DrawCall);
+        }
         _ => {
-            return Ok((true,true));
+            return Ok(UpdateResult::DrawCall);
         }
     }
 }
 
 fn handle_keyboard_input(
-    key: super::common::configs::Key,
-    program_state : &mut ProgramState,
-) -> Result<(bool, bool), Box<dyn std::error::Error>> {
-    let client_config = &mut program_state.client_config;
-    let ui_state = &mut program_state.ui_state;
-
+    key: configs::Key,
+    ui_state: &mut ui::UIState,
+    client_config: &configs::ClientConfig,
+    buffer: &mut Buffer,
+) -> Result<UpdateResult, Box<dyn std::error::Error>> {
     if key == client_config.key_map.quit {
-        return Ok((false, false));
+        return Ok(UpdateResult::Quit);
     }
     if key == client_config.key_map.resize_left && ui_state.percent_size_of_panes.0 > 2 {
         ui_state.percent_size_of_panes.0 -= 2;
@@ -69,12 +77,12 @@ fn handle_keyboard_input(
             ui_state.sidebar_list.previous();
         }
 
-        update_ui_state_from_buffer(&program_state.buffer.lock().unwrap(), &mut program_state.ui_state);
+        update_ui_state_from_buffer(&buffer, ui_state);
     }
-    Ok((true, true))
+    Ok(UpdateResult::DrawCall)
 }
 
-fn update_ui_state_from_buffer(buffer : &buffer::Buffer, ui_state : &mut ui::UIState) {
+fn update_ui_state_from_buffer(buffer: &buffer::Buffer, ui_state: &mut ui::UIState) {
     // Index of currently selected item.
     let index = ui_state.sidebar_list.state.selected();
     let index = if index.is_none() {
@@ -84,10 +92,10 @@ fn update_ui_state_from_buffer(buffer : &buffer::Buffer, ui_state : &mut ui::UIS
     };
     // Set the name of the file as the title.
     ui_state.current_content_panel_title = ui_state.sidebar_list.items[index].display_name.clone();
-    
+
     //If the newly selected item exists in the buffer, copy it into the ui_state struct.
     let url = ui_state.sidebar_list.items[index].url.clone();
-    let mut file_exists_in_buffer : bool = false;
+    let mut file_exists_in_buffer: bool = false;
     for file in buffer.get_file_list() {
         if file.url == url {
             file_exists_in_buffer = true;
@@ -103,4 +111,3 @@ fn update_ui_state_from_buffer(buffer : &buffer::Buffer, ui_state : &mut ui::UIS
         error!("File does not exist in buffer when it should.");
     }
 }
-
