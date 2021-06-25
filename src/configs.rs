@@ -1,15 +1,11 @@
-use {
-    serde::de::{self, Visitor},
-    serde::{Deserialize, Deserializer, Serialize, Serializer},
-    std::fmt,
-    url::Url,
-};
 
+use std::{fmt, fs, io, io::BufReader, io::BufWriter, io::Read, io::Write, path::Path};
+use serde::{de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer};
 use serde_json;
-use {
-    log::*,
-    std::{fs, io, io::BufReader, io::BufWriter, io::Read, io::Write, path::Path},
-};
+use url::Url;
+use chrono::prelude::*;
+use log::*;
+
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -137,6 +133,7 @@ impl Default for ClientUIConfig {
                         .unwrap(),
                     display_name: "latest.log".to_string(),
                     contents: vec!["Did not read log yet...".to_string()],
+                    last_modified: Option::None,
                 },
                 crate::files::File {
                     url: Url::from_file_path(
@@ -145,6 +142,7 @@ impl Default for ClientUIConfig {
                     .unwrap(),
                     display_name: "testing1.txt".to_string(),
                     contents: vec!["Did not read log yet...".to_string()],
+                    last_modified: Option::None,
                 },
             ],
         }

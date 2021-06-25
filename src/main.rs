@@ -6,6 +6,7 @@ use events::Config;
 use std::sync::{self, Arc, Mutex};
 use std::{io, path::Path, time::Duration};
 use log::*;
+use chrono::prelude::*;
 use tui::{backend::Backend, Terminal, text::Spans};
 
 #[cfg(windows)]

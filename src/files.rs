@@ -1,7 +1,9 @@
 use super::events::Event;
+use chrono::prelude::*;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
+use std::time;
 use std::sync;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -19,6 +21,7 @@ pub struct File {
     pub url: url::Url,
     pub display_name: String,
     pub contents: Vec<String>,
+    pub last_modified: Option<chrono::DateTime<Utc>>,
 }
 
 impl FileMonitor {
@@ -35,19 +38,21 @@ impl FileMonitor {
                     break;
                 }
 
-                let owned_file_list = file_list.lock().unwrap();
-                for file in owned_file_list.iter() {
-                    match load_url(&file.url) {
-                        Ok(output) => {
-                            let mut file = file.clone();
-                            file.contents = output;
-                            event_sender_handler.send(Event::FileUpdate(file)).unwrap();
+                let mut owned_file_list = file_list.lock().unwrap();
+                for file in owned_file_list.iter_mut() {
+                    if check_if_file_updated(file).unwrap() {
+                        file.last_modified = Some(chrono::Utc::now());
+                        match load_url(&file.url) {
+                            Ok(output) => {
+                                file.contents = output;
+                                event_sender_handler.send(Event::FileUpdate(file.clone())).unwrap();
+                            }
+                            Err(e) => panic!("Cannot open url {}. {}", file.url.as_str(), e),
                         }
-                        Err(e) => panic!("Cannot open url {}. {}", file.url.as_str(), e),
                     }
                 }
                 drop(owned_file_list);
-                std::thread::sleep(std::time::Duration::from_millis(100));
+                std::thread::sleep(std::time::Duration::from_millis(500));
             })
         };
 
@@ -68,6 +73,32 @@ impl FileMonitor {
     pub fn exit(&mut self) {
         self.should_exit.store(true, sync::atomic::Ordering::SeqCst)
     }
+}
+
+fn check_if_file_updated(file : &File) -> Result<bool, std::io::Error> {
+    if let Option::None = file.last_modified {
+        return Ok(true);
+    }
+    match file.url.scheme() {
+        "file" => {
+            let file_handle = std::fs::File::open(file.url.path()).unwrap();
+            let meta_data = file_handle.metadata().unwrap();
+            let time = meta_data.modified().unwrap();
+            let time = time.duration_since(time::SystemTime::UNIX_EPOCH).unwrap();
+            if time.as_secs() > file.last_modified.unwrap().timestamp() as u64 {
+                return Ok(true);
+            }
+        }
+        _ => {
+            error!(
+                "Unknown url scheme {} in url {}",
+                file.url.scheme(),
+                file.url.as_str()
+            );
+            return Err(std::io::Error::from(std::io::ErrorKind::Other))
+        }
+    }
+    Ok(false)
 }
 
 fn load_url(url: &url::Url) -> Result<Vec<String>, std::io::Error> {
