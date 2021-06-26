@@ -26,7 +26,7 @@ pub struct File {
 }
 
 impl FileMonitor {
-    pub fn new(event_sender_handler: std::sync::mpsc::Sender<events::Event>, config : &configs::ClientConfig) -> Self {
+    pub fn new(event_sender_handler: std::sync::mpsc::Sender<events::Event>, config : &configs::Config) -> Self {
         let should_exit = sync::Arc::from(sync::atomic::AtomicBool::new(false));
         let file_list = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
 

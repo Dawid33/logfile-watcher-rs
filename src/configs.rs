@@ -95,12 +95,14 @@ impl From<termion::event::Key> for Key {
 
 ///User configuration that is stored as a json file.
 #[derive(Serialize, Deserialize,Clone)]
-pub struct ClientConfig {
+pub struct Config {
     pub refersh_rate_miliseconds: u64,
     pub use_tui: bool,
+    pub run_server: bool,
     pub force_update_miliseconds: u64,
     pub key_map: ShortcutKeyMap,
     pub ui_config: ClientUIConfig,
+    pub server_config: ServerConfig
 }
 
 ///Keyboard controls
@@ -166,19 +168,21 @@ impl Default for ShortcutKeyMap {
     }
 }
 
-impl Default for ClientConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
             refersh_rate_miliseconds: 50,
             force_update_miliseconds: 1000,
+            run_server: false,
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
             ui_config: ClientUIConfig::default(),
+            server_config : ServerConfig::default(),
         }
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ServerConfig {
     pub name: String,
     pub url: Url,

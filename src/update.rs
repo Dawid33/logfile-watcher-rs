@@ -11,7 +11,7 @@ use super::{events, ui};
 pub fn update(
     ui_state: &mut UIState,
     events: &mut events::EventManager,
-    config: &configs::ClientConfig,
+    config: &configs::Config,
     buffer: Arc<Mutex<Buffer>>,
 ) -> Result<UpdateResult, Box<dyn std::error::Error>> {
     let mut buffer = buffer.lock().unwrap();
@@ -53,7 +53,7 @@ pub fn update(
 fn handle_keyboard_input(
     key: configs::Key,
     ui_state: &mut ui::UIState,
-    client_config: &configs::ClientConfig,
+    client_config: &configs::Config,
     buffer: &mut Buffer,
 ) -> Result<UpdateResult, Box<dyn std::error::Error>> {
     if key == client_config.key_map.quit {

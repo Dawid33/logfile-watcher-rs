@@ -22,7 +22,7 @@ mod files;
 mod ui;
 mod update;
 
-pub const CONFIG_FILENAME: &str = "client_config.toml";
+pub const CONFIG_FILENAME: &str = "config.toml";
 
 pub enum UpdateResult {
     Quit,
@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //Configuration file for the client.
     let path = Path::new(CONFIG_FILENAME);
-    let config = configs::load_struct_toml::<configs::ClientConfig>(path);
+    let config = configs::load_struct_toml::<configs::Config>(path);
 
     //Run code for tui.
     if cfg!(unix) {
@@ -70,7 +70,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  * are passed into update_client() and draw_client().
  */
 pub fn run_client<B: Backend>(
-    client_config: configs::ClientConfig,
+    client_config: configs::Config,
     terminal: &mut Terminal<B>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     //UI state that dictates what ui to draw and how to draw it.
@@ -93,7 +93,7 @@ pub fn run_client<B: Backend>(
             Ok(result) => {
                 match result {
                     UpdateResult::DrawCall => {
-                        if let Err(e) = ui::draw::draw_ui(terminal, &mut ui_state) {
+                        if let Err(e) = ui::draw::draw_ui(terminal, &mut ui_state, &client_config) {
                             break Err(e);
                         }
                     },
@@ -109,4 +109,9 @@ pub fn run_client<B: Backend>(
     //Clear the terminal because the tui pollutes the space above the prompt after exit.
     terminal.clear()?;
     result
+}
+
+pub fn run_server(buffer : &mut buffer::Buffer, config : configs::ServerConfig) -> Result<(), Box<dyn std::error::Error>> {
+
+    Ok(())
 }

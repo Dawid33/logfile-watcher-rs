@@ -42,11 +42,11 @@ impl Default for Config {
 
 impl EventManager {
     #[allow(dead_code)]
-    pub fn new(config : configs::ClientConfig) -> EventManager {
+    pub fn new(config : configs::Config) -> EventManager {
         EventManager::with_config(Config::default(), config)
     }
 
-    pub fn with_config(config: Config, client_config : configs::ClientConfig) -> EventManager {
+    pub fn with_config(config: Config, client_config : configs::Config) -> EventManager {
         let (tx, rx) = mpsc::channel::<Event>();
         let file_monitor = files::FileMonitor::new(tx.clone(),&client_config);
         let input_handle = {

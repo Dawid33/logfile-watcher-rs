@@ -19,13 +19,14 @@ use {
 pub fn draw_ui<B>(
     terminal: &mut tui::Terminal<B>,
     ui_state: &mut UIState,
+    client_config : &configs::Config
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
     match ui_state.current_mode {
-        UIMode::Main => draw_main(terminal, ui_state)?,
-        UIMode::Help => draw_help(terminal, ui_state)?,
+        UIMode::Main => draw_main(terminal, ui_state, client_config)?,
+        UIMode::Help => draw_help(terminal, ui_state, client_config)?,
     }
     Ok(())
 }
@@ -33,6 +34,7 @@ where
 pub fn draw_main<B>(
     terminal: &mut tui::Terminal<B>,
     ui_state: &mut UIState,
+    client_config : &configs::Config
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
@@ -111,14 +113,12 @@ where
 pub fn draw_help<B>(
     terminal: &mut tui::Terminal<B>,
     ui_state: &mut UIState,
+    client_config : &configs::Config
 ) -> Result<(), Box<dyn std::error::Error>>
 where
     B: Backend,
 {
     terminal.draw(|frame| {
-        /*
-        let client_config = &mut .client_config;
-
         let text = vec![
             Spans::from(format!(
                 "{:?} : quit the help menu.",
@@ -159,7 +159,7 @@ where
             .split(frame.size());
 
         frame.render_widget(paragraph, help_block_layout[0]);
-        */
+        
     })?;
     Ok(())
 }

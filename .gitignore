@@ -1,6 +1,5 @@
 /target
 Cargo.lock
-server_config.toml
-client_config.toml
+config.toml
 latest.log
 /logs
