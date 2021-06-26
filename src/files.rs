@@ -50,7 +50,7 @@ impl FileMonitor {
                     warn!("Exiting sender");
                     break;
                 }
-                //let force_update_all = false;
+                let force_update_all = false;
                 /*
                 let force_update_all =
                     if old_time + force_update_refresh_rate < time::SystemTime::now() {
