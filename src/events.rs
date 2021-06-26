@@ -1,6 +1,7 @@
 use std::{io,thread,time::Duration};
 use std::sync::{atomic::{AtomicBool, Ordering},mpsc, Arc};
 use crate::configs;
+use crate::files;
 use crate::files::File;
 use std::str::FromStr;
 use url::Url;
@@ -12,6 +13,7 @@ pub enum Event {
     Input(configs::Key),
     Tick,
     FileUpdate(File),
+    FileRemove(File),
     Quit,
 }
 
@@ -28,27 +30,25 @@ pub struct EventManager {
 #[derive(Debug, Clone, Copy)]
 pub struct Config {
     pub exit_key: configs::Key,
-    pub tick_rate: Duration,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
             exit_key: configs::Key::Char('q'),
-            tick_rate: Duration::from_millis(100),
         }
     }
 }
 
 impl EventManager {
     #[allow(dead_code)]
-    pub fn new() -> EventManager {
-        EventManager::with_config(Config::default())
+    pub fn new(config : configs::ClientConfig) -> EventManager {
+        EventManager::with_config(Config::default(), config)
     }
 
-    pub fn with_config(config: Config) -> EventManager {
+    pub fn with_config(config: Config, client_config : configs::ClientConfig) -> EventManager {
         let (tx, rx) = mpsc::channel::<Event>();
-        let file_monitor = super::files::FileMonitor::new(tx.clone());
+        let file_monitor = files::FileMonitor::new(tx.clone(),&client_config);
         let input_handle = {
             let tx = tx.clone();
 
@@ -70,11 +70,12 @@ impl EventManager {
         };
         let tick_handle = {
             let tx = tx.clone();
+            let tick_rate = std::time::Duration::from_millis(client_config.refersh_rate_miliseconds);
             thread::spawn(move || loop {
                 if tx.send(Event::Tick).is_err() {
                     break;
                 }
-                thread::sleep(config.tick_rate);
+                thread::sleep(tick_rate);
             })
         };
         EventManager {

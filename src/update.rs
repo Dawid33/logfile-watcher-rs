@@ -33,6 +33,17 @@ pub fn update(
             update_ui_state_from_buffer(&buffer, ui_state);
             return Ok(UpdateResult::DrawCall);
         }
+        events::Event::FileRemove(file) => {
+            for buffer_file in buffer.get_file_list() {
+                if buffer_file.url == file.url {
+                    if let Err(e) = buffer.remove_file(file) {
+                        return Err(e);
+                    }
+                    break;
+                }
+            }
+            return Ok(UpdateResult::DrawCall);
+        }
         _ => {
             return Ok(UpdateResult::DrawCall);
         }

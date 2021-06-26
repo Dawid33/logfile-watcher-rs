@@ -1,4 +1,5 @@
-use super::events::Event;
+use crate::events;
+use crate::configs;
 use chrono::prelude::*;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -25,34 +26,42 @@ pub struct File {
 }
 
 impl FileMonitor {
-    pub fn new(event_sender_handler: std::sync::mpsc::Sender<Event>) -> Self {
+    pub fn new(event_sender_handler: std::sync::mpsc::Sender<events::Event>, config : &configs::ClientConfig) -> Self {
         let should_exit = sync::Arc::from(sync::atomic::AtomicBool::new(false));
         let file_list = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
 
         let file_watcher_handle = {
             let file_list: Arc<Mutex<super::buffer::FileList>> = file_list.clone();
             let should_exit = should_exit.clone();
+            let mut old_time = time::SystemTime::now();
+            let force_update_refresh_rate = std::time::Duration::from_millis(config.force_update_miliseconds);
             std::thread::spawn(move || loop {
                 if should_exit.load(sync::atomic::Ordering::Relaxed) {
                     warn!("Exiting sender");
                     break;
                 }
 
+                let force_update_all = if old_time + force_update_refresh_rate < time::SystemTime::now() {
+                    old_time = time::SystemTime::now();
+                    true
+                } else {
+                    false
+                };
+
                 let mut owned_file_list = file_list.lock().unwrap();
                 for file in owned_file_list.iter_mut() {
-                    if check_if_file_updated(file).unwrap() {
+                    if force_update_all || check_has_been_modified(file).unwrap() {
                         file.last_modified = Some(chrono::Utc::now());
                         match load_url(&file.url) {
                             Ok(output) => {
                                 file.contents = output;
-                                event_sender_handler.send(Event::FileUpdate(file.clone())).unwrap();
+                                event_sender_handler.send(events::Event::FileUpdate(file.clone())).unwrap();
                             }
                             Err(e) => panic!("Cannot open url {}. {}", file.url.as_str(), e),
                         }
                     }
                 }
                 drop(owned_file_list);
-                std::thread::sleep(std::time::Duration::from_millis(500));
             })
         };
 
@@ -75,13 +84,14 @@ impl FileMonitor {
     }
 }
 
-fn check_if_file_updated(file : &File) -> Result<bool, std::io::Error> {
+fn check_has_been_modified(file : &File) -> Result<bool, std::io::Error> {
     if let Option::None = file.last_modified {
         return Ok(true);
     }
     match file.url.scheme() {
         "file" => {
             let file_handle = std::fs::File::open(file.url.path()).unwrap();
+            file_handle.sync_all().unwrap();
             let meta_data = file_handle.metadata().unwrap();
             let time = meta_data.modified().unwrap();
             let time = time.duration_since(time::SystemTime::UNIX_EPOCH).unwrap();
@@ -124,6 +134,7 @@ fn load_url(url: &url::Url) -> Result<Vec<String>, std::io::Error> {
 fn read_file(url: &url::Url) -> Result<Vec<String>, std::io::Error> {
     if let Ok(file_path) = url.to_file_path() {
         if let Ok(file_handle) = std::fs::File::open(file_path) {
+            file_handle.sync_all().unwrap();
             let mut buf_reader = std::io::BufReader::new(file_handle);
             let mut buffer = String::new();
             let mut output: Vec<String> = Vec::new();

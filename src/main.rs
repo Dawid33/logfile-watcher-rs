@@ -82,9 +82,8 @@ pub fn run_client<B: Backend>(
 
     // Initialize event loop.
     let mut events = events::EventManager::with_config(events::Config {
-        exit_key: client_config.key_map.quit,
-        tick_rate: Duration::from_millis(client_config.refersh_rate_miliseconds),
-    });
+        exit_key: client_config.key_map.quit
+    }, client_config.clone());
 
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
