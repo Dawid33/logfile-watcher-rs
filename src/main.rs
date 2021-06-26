@@ -2,23 +2,23 @@
 #![allow(dead_code)]
 #![recursion_limit = "24"]
 
+use chrono::prelude::*;
 use events::Config;
+use log::*;
 use std::sync::{self, Arc, Mutex};
 use std::{io, path::Path, time::Duration};
-use log::*;
-use chrono::prelude::*;
-use tui::{backend::Backend, Terminal, text::Spans};
+use tui::{backend::Backend, text::Spans, Terminal};
 
 #[cfg(windows)]
 use tui::backend::CrosstermBackend;
 #[cfg(unix)]
 use {termion::raw::IntoRawMode, tui::backend::TermionBackend};
 
-mod networking;
-mod configs;
 mod buffer;
+mod configs;
 mod events;
 mod files;
+mod networking;
 mod ui;
 mod update;
 
@@ -78,32 +78,33 @@ pub fn run_client<B: Backend>(
 
     //Buffer that holds currently tracked files.
     let buffer = buffer::Buffer::new(ui_state.sidebar_list.items.clone());
-    let buffer = Arc::new(Mutex::from(buffer));
-
+    let mut buffer = Arc::new(Mutex::from(buffer));
     // Initialize event loop.
-    let mut events = events::EventManager::with_config(events::Config {
-        exit_key: client_config.key_map.quit
-    }, client_config.clone());
+    let mut events = events::EventManager::new(
+        events::Config {
+            exit_key: client_config.key_map.quit,
+        },
+        client_config.clone(),
+        buffer.clone(),
+    );
 
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
 
     let result = loop {
-        match update::update(&mut ui_state, &mut events, &client_config, buffer.clone()) {
-            Ok(result) => {
-                match result {
-                    UpdateResult::DrawCall => {
-                        if let Err(e) = ui::draw::draw_ui(terminal, &mut ui_state, &client_config) {
-                            break Err(e);
-                        }
-                    },
-                    UpdateResult::Quit => {
-                        break Ok(());
-                    },
-                    UpdateResult::None => ()
+        match update::update(&mut ui_state, &mut events, &client_config, &mut buffer) {
+            Ok(result) => match result {
+                UpdateResult::DrawCall => {
+                    if let Err(e) = ui::draw::draw_ui(terminal, &mut ui_state, &client_config) {
+                        break Err(e);
+                    }
                 }
+                UpdateResult::Quit => {
+                    break Ok(());
+                }
+                UpdateResult::None => (),
             },
-            Err(e) => break Err(e)
+            Err(e) => break Err(e),
         }
     };
     //Clear the terminal because the tui pollutes the space above the prompt after exit.
@@ -111,7 +112,9 @@ pub fn run_client<B: Backend>(
     result
 }
 
-pub fn run_server(buffer : &mut buffer::Buffer, config : configs::ServerConfig) -> Result<(), Box<dyn std::error::Error>> {
-
+pub fn run_server(
+    _buffer: Arc<Mutex<buffer::Buffer>>,
+    _config: configs::ServerConfig,
+) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }

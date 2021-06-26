@@ -1,12 +1,12 @@
-use tui::{buffer, text::Spans};
-
 use crate::files::File;
+use tui::{buffer, text::Spans};
 
 pub type FileList = Vec<File>;
 pub struct Buffer {
+    pub update_bus: bus::Bus<BufferUpdateEvent>,
     file_list: FileList,
-    pub update_counter: u64,
 }
+/*
 #[derive(Debug)]
 struct BufferError(String);
 impl std::fmt::Display for BufferError {
@@ -15,14 +15,19 @@ impl std::fmt::Display for BufferError {
     }
 }
 impl std::error::Error for BufferError {
-
+}
+*/
+#[derive(Clone)]
+pub enum BufferUpdateEvent {
+    FullUpdate,
 }
 
 impl Buffer {
     pub fn new(file_list: FileList) -> Self {
+        let update_bus: bus::Bus<BufferUpdateEvent> = bus::Bus::new(10);
         Buffer {
-            update_counter: 1,
             file_list,
+            update_bus,
         }
     }
     pub fn get_file(&self) {}
@@ -33,21 +38,20 @@ impl Buffer {
                 break;
             }
         }
+        self.update_bus.broadcast(BufferUpdateEvent::FullUpdate);
     }
     pub fn get_file_list(&self) -> &FileList {
         &self.file_list
     }
-    pub fn remove_file(&mut self, file : File) -> Result<(), Box<dyn std::error::Error>> {
-        self.update_counter += 1;
+    pub fn remove_file(&mut self, file: File) -> Result<(), Box<dyn std::error::Error>> {
         for buffer_file in &self.file_list {
-            if buffer_file.url == file.url {
-
-            }
+            if buffer_file.url == file.url {}
         }
+        self.update_bus.broadcast(BufferUpdateEvent::FullUpdate);
         Ok(())
     }
     pub fn add_file(&mut self, file: File) {
         self.file_list.push(file);
-        self.update_counter += 1;
+        self.update_bus.broadcast(BufferUpdateEvent::FullUpdate);
     }
 }

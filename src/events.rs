@@ -1,9 +1,12 @@
-use std::{io,thread,time::Duration};
-use std::sync::{atomic::{AtomicBool, Ordering},mpsc, Arc};
+use crate::buffer;
 use crate::configs;
 use crate::files;
-use crate::files::File;
 use std::str::FromStr;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    mpsc, Arc, Mutex,
+};
+use std::{io, thread, time::Duration};
 use url::Url;
 
 #[cfg(unix)]
@@ -12,8 +15,8 @@ use termion::input::TermRead;
 pub enum Event {
     Input(configs::Key),
     Tick,
-    FileUpdate(File),
-    FileRemove(File),
+    FileUpdate(files::File),
+    FileRemove(files::File),
     Quit,
 }
 
@@ -41,14 +44,13 @@ impl Default for Config {
 }
 
 impl EventManager {
-    #[allow(dead_code)]
-    pub fn new(config : configs::Config) -> EventManager {
-        EventManager::with_config(Config::default(), config)
-    }
-
-    pub fn with_config(config: Config, client_config : configs::Config) -> EventManager {
+    pub fn new(
+        config: Config,
+        client_config: configs::Config,
+        buffer: Arc<Mutex<buffer::Buffer>>,
+    ) -> EventManager {
         let (tx, rx) = mpsc::channel::<Event>();
-        let file_monitor = files::FileMonitor::new(tx.clone(),&client_config);
+        let file_monitor = files::FileMonitor::new(tx.clone(), &client_config, buffer);
         let input_handle = {
             let tx = tx.clone();
 
@@ -70,7 +72,8 @@ impl EventManager {
         };
         let tick_handle = {
             let tx = tx.clone();
-            let tick_rate = std::time::Duration::from_millis(client_config.refersh_rate_miliseconds);
+            let tick_rate =
+                std::time::Duration::from_millis(client_config.refersh_rate_miliseconds);
             thread::spawn(move || loop {
                 if tx.send(Event::Tick).is_err() {
                     break;

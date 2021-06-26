@@ -1,11 +1,11 @@
-
-use std::{fmt, fs, io, io::BufReader, io::BufWriter, io::Read, io::Write, path::Path};
-use serde::{de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer};
-use serde_json;
-use url::Url;
 use chrono::prelude::*;
 use log::*;
-
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
+use std::{fmt, fs, io, io::BufReader, io::BufWriter, io::Read, io::Write, path::Path};
+use url::Url;
 
 // Wrapper over the keys enums in other backends e.g termion::event:Key
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -94,7 +94,7 @@ impl From<termion::event::Key> for Key {
 }
 
 ///User configuration that is stored as a json file.
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
     pub refersh_rate_miliseconds: u64,
     pub use_tui: bool,
@@ -102,7 +102,7 @@ pub struct Config {
     pub force_update_miliseconds: u64,
     pub key_map: ShortcutKeyMap,
     pub ui_config: ClientUIConfig,
-    pub server_config: ServerConfig
+    pub server_config: ServerConfig,
 }
 
 ///Keyboard controls
@@ -177,7 +177,7 @@ impl Default for Config {
             use_tui: true,
             key_map: ShortcutKeyMap::default(),
             ui_config: ClientUIConfig::default(),
-            server_config : ServerConfig::default(),
+            server_config: ServerConfig::default(),
         }
     }
 }
@@ -199,9 +199,9 @@ impl Default for ServerConfig {
     }
 }
 
-
 /// Try loading in struct from json file. If json file does not exist, load in
 /// default values for the struct and create a new file with those values.
+/*
 pub fn load_struct_json<T>(path: &Path) -> T
 where
     for<'de> T: Deserialize<'de> + Serialize + Default,
@@ -232,6 +232,7 @@ where
         }
     }
 }
+*/
 
 pub fn load_struct_toml<T>(path: &Path) -> T
 where
@@ -254,6 +255,7 @@ where
     }
 }
 
+/*
 fn try_read_json_file<'a, T>(path: &Path) -> serde_json::Result<T>
 where
     for<'de> T: Deserialize<'de>,
@@ -284,6 +286,7 @@ where
         Err(e) => Err(serde_json::Error::io(e)),
     }
 }
+*/
 
 fn try_read_toml_file<'a, T>(path: &Path) -> Result<T, Box<dyn std::error::Error>>
 where

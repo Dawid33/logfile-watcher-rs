@@ -1,10 +1,12 @@
 use std::sync::{self, Arc, Mutex};
 use termion::event;
-use {
-    crate::configs, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans,
-};
+use {crate::configs, log::*, std::io, std::io::BufRead, tui::text::Span, tui::text::Spans};
 
-use crate::{UpdateResult, buffer::{self, Buffer}, ui::UIState};
+use crate::{
+    buffer::{self, Buffer},
+    ui::UIState,
+    UpdateResult,
+};
 
 use super::{events, ui};
 
@@ -12,7 +14,7 @@ pub fn update(
     ui_state: &mut UIState,
     events: &mut events::EventManager,
     config: &configs::Config,
-    buffer: Arc<Mutex<Buffer>>,
+    buffer: &mut Arc<Mutex<Buffer>>,
 ) -> Result<UpdateResult, Box<dyn std::error::Error>> {
     let mut buffer = buffer.lock().unwrap();
     match events.next()? {
