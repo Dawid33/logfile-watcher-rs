@@ -16,40 +16,49 @@ pub fn update(
     config: &configs::Config,
     buffer: &mut Arc<Mutex<Buffer>>,
 ) -> Result<UpdateResult, Box<dyn std::error::Error>> {
-    let mut buffer = buffer.lock().unwrap();
-    match events.next()? {
-        events::Event::Input(key) => {
-            return handle_keyboard_input(key, ui_state, config, &mut buffer);
-        }
-        events::Event::Tick => {
-            events.file_monitor.update_file_list(&buffer);
-            return Ok(UpdateResult::None);
-        }
-        events::Event::FileUpdate(file) => {
-            for buffer_file in buffer.get_file_list() {
-                if buffer_file.url == file.url {
-                    buffer.set_file(file);
-                    break;
-                }
+    let mut result : Result<UpdateResult, Box<dyn std::error::Error>> = Ok(UpdateResult::None);
+    while let Ok(event) = events.try_get_next() {
+        result = match event {
+            events::Event::Input(key) => {
+                let mut buffer = buffer.lock().unwrap();
+                handle_keyboard_input(key, ui_state, config, &mut buffer)
             }
-            update_ui_state_from_buffer(&buffer, ui_state);
-            return Ok(UpdateResult::DrawCall);
-        }
-        events::Event::FileRemove(file) => {
-            for buffer_file in buffer.get_file_list() {
-                if buffer_file.url == file.url {
-                    if let Err(e) = buffer.remove_file(file) {
-                        return Err(e);
+            events::Event::Tick => {
+                let buffer = buffer.lock().unwrap();
+                update_ui_state_from_buffer(&buffer, ui_state);
+                Ok(UpdateResult::DrawCall)
+            }
+            events::Event::FileUpdate(file) => {
+                let mut buffer = buffer.lock().unwrap();
+                for buffer_file in buffer.get_file_list() {
+                    if buffer_file.url == file.url {
+                        buffer.set_file(file);
+                        break;
                     }
-                    break;
                 }
+                Ok(UpdateResult::DrawCall)
             }
-            return Ok(UpdateResult::DrawCall);
-        }
-        _ => {
-            return Ok(UpdateResult::DrawCall);
+            events::Event::FileRemove(file) => {
+                let mut buffer = buffer.lock().unwrap();
+                for buffer_file in buffer.get_file_list() {
+                    if buffer_file.url == file.url {
+                        if let Err(e) = buffer.remove_file(file) {
+                            return Err(e);
+                        }
+                        break;
+                    }
+                }
+                Ok(UpdateResult::DrawCall)
+            }
+            _ => {
+                Ok(UpdateResult::DrawCall)
+            }
+        };
+        if *result.as_ref().unwrap() == UpdateResult::DrawCall || *result.as_ref().unwrap() == UpdateResult::Quit {
+            return result;
         }
     }
+    result
 }
 
 fn handle_keyboard_input(
@@ -76,6 +85,14 @@ fn handle_keyboard_input(
             ui_state.current_mode = ui::UIMode::Help;
         }
     }
+    if key == client_config.key_map.menu {
+        if let ui::UIMode::Menu = ui_state.current_mode {
+
+            ui_state.current_mode = ui_state.previous_mode;
+        } else {
+            ui_state.current_mode = ui::UIMode::Menu;
+        }
+    }
     if key == client_config.key_map.reload_config {
         //let config = common::load_struct_toml::<ClientConfig>(Path::new(super::CONFIG_FILENAME));
         //*client_config = config;
@@ -89,8 +106,6 @@ fn handle_keyboard_input(
             // Highlight previous item in list
             ui_state.sidebar_list.previous();
         }
-
-        update_ui_state_from_buffer(&buffer, ui_state);
     }
     Ok(UpdateResult::DrawCall)
 }

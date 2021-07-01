@@ -27,6 +27,7 @@ where
     match ui_state.current_mode {
         UIMode::Main => draw_main(terminal, ui_state, client_config)?,
         UIMode::Help => draw_help(terminal, ui_state, client_config)?,
+        UIMode::Menu => draw_menu(terminal, ui_state, client_config)?,
     }
     Ok(())
 }
@@ -105,6 +106,20 @@ where
         //Render sidebar and content pane.
         frame.render_widget(content, content_panel_layout[1]);
         frame.render_stateful_widget(items, sidebar_list[0], &mut ui_state.sidebar_list.state);
+    })?;
+    Ok(())
+}
+
+pub fn draw_menu<B>(
+    terminal: &mut tui::Terminal<B>,
+    ui_state: &mut UIState,
+    client_config: &configs::Config,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    B: Backend,
+{   
+    terminal.draw(|frame| {
+        let size = frame.size();
     })?;
     Ok(())
 }

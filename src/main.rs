@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-#![recursion_limit = "24"]
+#![recursion_limit = "100"]
 
 use chrono::prelude::*;
 use events::Config;
@@ -24,6 +24,7 @@ mod update;
 
 pub const CONFIG_FILENAME: &str = "config.toml";
 
+#[derive(PartialEq)]
 pub enum UpdateResult {
     Quit,
     DrawCall,
@@ -78,6 +79,7 @@ pub fn run_client<B: Backend>(
 
     //Buffer that holds currently tracked files.
     let buffer = buffer::Buffer::new(ui_state.sidebar_list.items.clone());
+    //Initialize buffer with initial files from ui_state ( origininally from ui_config )
     let mut buffer = Arc::new(Mutex::from(buffer));
     // Initialize event loop.
     let mut events = events::EventManager::new(
@@ -87,9 +89,16 @@ pub fn run_client<B: Backend>(
         client_config.clone(),
         buffer.clone(),
     );
-
+    let mut unlocked_buffer = buffer.lock().unwrap();
+    for file in &ui_state.sidebar_list.items {
+        unlocked_buffer.add_file(file.clone());
+    }
+    drop(unlocked_buffer);
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
+
+    //Draw to the screen once, then only update the screen when something changes.
+    ui::draw::draw_ui(terminal, &mut ui_state, &client_config)?;
 
     let result = loop {
         match update::update(&mut ui_state, &mut events, &client_config, &mut buffer) {

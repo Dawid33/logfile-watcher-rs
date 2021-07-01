@@ -90,8 +90,8 @@ impl EventManager {
         }
     }
 
-    pub fn next(&self) -> Result<Event, mpsc::RecvError> {
-        self.rx.recv()
+    pub fn try_get_next(&self) -> Result<Event, mpsc::TryRecvError> {
+        self.rx.try_recv()
     }
 }
 

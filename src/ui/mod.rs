@@ -30,6 +30,7 @@ pub struct UIState<'a> {
 pub enum UIMode {
     Main,
     Help,
+    Menu,
 }
 impl UIState<'_> {
     pub fn new(ui_config: &configs::ClientUIConfig) -> Self {

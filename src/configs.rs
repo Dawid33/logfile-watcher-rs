@@ -110,6 +110,7 @@ pub struct Config {
 pub struct ShortcutKeyMap {
     pub quit: Key,
     pub help: Key,
+    pub menu: Key,
     pub left: Key,
     pub right: Key,
     pub resize_left: Key,
@@ -155,6 +156,7 @@ impl Default for ClientUIConfig {
 impl Default for ShortcutKeyMap {
     fn default() -> Self {
         Self {
+            menu: Key::Char('m'),
             quit: Key::Char('q'),
             help: Key::Char('?'),
             left: Key::Char('h'),

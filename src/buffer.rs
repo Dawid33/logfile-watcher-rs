@@ -1,5 +1,6 @@
 use crate::files::File;
 use tui::{buffer, text::Spans};
+use log::*;
 
 pub type FileList = Vec<File>;
 pub struct Buffer {
@@ -34,7 +35,7 @@ impl Buffer {
     pub fn set_file(&mut self, new_file: File) {
         for file in &mut self.file_list {
             if file.url == new_file.url {
-                *file = new_file.clone();
+                *file = new_file;
                 break;
             }
         }
