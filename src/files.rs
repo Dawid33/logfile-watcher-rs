@@ -32,6 +32,10 @@ impl FileMonitor {
         buffer: Arc<Mutex<buffer::Buffer>>,
     ) -> Self {
         let should_exit = sync::Arc::from(sync::atomic::AtomicBool::new(false));
+        let mut unlocked_buffer = buffer.lock().unwrap();
+        let mut file_list: crate::buffer::FileList = (*unlocked_buffer.get_file_list()).clone();
+        let mut buffer_recv = unlocked_buffer.update_bus.add_rx();
+        drop(unlocked_buffer);
 
         let file_watcher_handle = {
             let should_exit = should_exit.clone();
@@ -39,10 +43,6 @@ impl FileMonitor {
             let force_update_refresh_rate =
             std::time::Duration::from_millis(config.force_update_miliseconds);
 
-            let mut unlocked_buffer = buffer.lock().unwrap();
-            let mut file_list: crate::buffer::FileList = (*unlocked_buffer.get_file_list()).clone();
-            let mut buffer_recv = unlocked_buffer.update_bus.add_rx();
-            drop(unlocked_buffer);
             
             std::thread::spawn(move || loop {
                 if should_exit.load(sync::atomic::Ordering::Relaxed) {
@@ -73,7 +73,7 @@ impl FileMonitor {
                         }
                     }
                 }
-                /*
+                
                 if let Ok(event) = buffer_recv.try_recv() {
                     match event {
                         buffer::BufferUpdateEvent::FullUpdate => {
@@ -82,7 +82,7 @@ impl FileMonitor {
                         }
                     }
                 }
-                */
+                
                 std::thread::sleep(time::Duration::from_millis(100));
             })
         };

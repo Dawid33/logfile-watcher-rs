@@ -20,8 +20,7 @@ pub fn update(
     while let Ok(event) = events.try_get_next() {
         result = match event {
             events::Event::Input(key) => {
-                let mut buffer = buffer.lock().unwrap();
-                handle_keyboard_input(key, ui_state, config, &mut buffer)
+                handle_keyboard_input(key, ui_state, config)
             }
             events::Event::Tick => {
                 let buffer = buffer.lock().unwrap();
@@ -65,7 +64,6 @@ fn handle_keyboard_input(
     key: configs::Key,
     ui_state: &mut ui::UIState,
     client_config: &configs::Config,
-    buffer: &mut Buffer,
 ) -> Result<UpdateResult, Box<dyn std::error::Error>> {
     if key == client_config.key_map.quit {
         return Ok(UpdateResult::Quit);

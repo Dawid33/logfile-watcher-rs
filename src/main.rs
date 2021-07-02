@@ -89,11 +89,6 @@ pub fn run_client<B: Backend>(
         client_config.clone(),
         buffer.clone(),
     );
-    let mut unlocked_buffer = buffer.lock().unwrap();
-    for file in &ui_state.sidebar_list.items {
-        unlocked_buffer.add_file(file.clone());
-    }
-    drop(unlocked_buffer);
     //Clear the terminal to ensure a blank slate.
     terminal.clear()?;
 

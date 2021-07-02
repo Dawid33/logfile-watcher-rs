@@ -148,6 +148,7 @@ impl Default for ClientUIConfig {
                     contents: vec!["Did not read log yet...".to_string()],
                     last_modified: Option::None,
                 },
+                
             ],
         }
     }
