@@ -1,1 +1,0 @@
-Put info! calls in the file watcher thread to see why ui_state isnt picking up changes made to the buffer ( maybe the file watcher is sending old / un-updated data to the buffer? the buffer isnt saving the files correctly? the buffer is being overwritten in some stray big of code?...)
