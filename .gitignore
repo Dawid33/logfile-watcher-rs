@@ -3,3 +3,4 @@ Cargo.lock
 config.toml
 latest.log
 /logs
+/.vscode
